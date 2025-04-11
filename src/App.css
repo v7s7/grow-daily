@@ -1,38 +1,480 @@
-.App {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #021d34;
+  color: #f8cc6a;
+  font-family: 'Inter', sans-serif;
+  padding-top: 80px; /* space for fixed navbar */
+}
+
+h2, h3 {
+  color: #f8cc6a;
+}
+
+/* ========= NAVBAR ========= */
+/* .navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 70px;
+  background: #092945;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 9999;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+} */
+
+
+/* .navbar-logo {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #f8cc6a;
+  cursor: pointer;
+  user-select: none;
+} */
+
+/* .navbar-menu {
+  display: flex;
+  gap: 36px;
+} */
+
+/* .navbar-menu span {
+  font-size: 1rem;
+  color: #f8cc6a;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: 0.25s ease-in-out;
+} */
+
+.navbar-menu span:hover {
+  /* background-color: rgba(245, 200, 76, 0.15); */
+  /* transform: translateY(-2px); */
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); */
+}
+
+/* ========= SHARED STYLES ========= */
+div {
+  max-width: 900px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+input, select {
+  background-color: #021d34;
+  color: #f8cc6a;
+  border: 1px solid #2a2f58;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #f8cc6a;
+  color: #021d34;
+  font-weight: 600;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin: 6px;
+}
+
+button:hover {
+  background-color: #ffda74;
+  transform: translateY(-1px) scale(1.05);
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin: 40px auto;
+  max-width: 600px;
+}
+
+.task-card {
+  background-color: transparent;
+  color: #f5c84c;
+  border-radius: 12px;
   text-align: center;
+  cursor: pointer;
+  transition: 0.25s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.task-icon {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 8px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+img {
+  max-width: 100%;
+  height: auto;
+  max-height: 150px;
+}
+
+.task-button {
+  width: 80px;
+  height: 80px;
+  padding: 8px;
+  border: 2px solid gold;
+  border-radius: 10px;
+  margin: 10px;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+
+.task-button:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.task-button span {
+  color: gold;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 5px;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 600px) {
+  .task-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .navbar-menu span {
+    font-size: 0.9rem;
+  }
+
+  .task-button span {
+    font-size: 12px;
+  }
+
+  button {
+    font-size: 14px;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+@media (max-width: 400px) {
+  .task-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+/* ========= SPINNER ========= */
+.spinner {
+  border: 4px solid #f5c84c;
+  border-top: 4px solid #0a0f2c;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.task-page-container {
+  max-width: 380px; /* Reduced width for compact view */
+  margin: auto;
+  padding: 20px;
+  background-color: rgba(12, 45, 73, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px; /* less spacing between fields */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+.form-group label {
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  padding-left: 2px; /* slight padding for balance */
+}
+
+.button-center {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 12px; /* keep it close to the bottom text */
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: 16px; /* reduced space below title */
+}
+/* === Timer Buttons === */
+button {
+  padding: 10px 16px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  margin: 6px 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* === Layout Container for Focus Pages === */
+.task-page-container {
+  max-width: 480px;
+  margin: 40px auto;
+  background: #10172a;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+/* === Input Fields === */
+.task-page-container input,
+.task-page-container select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* === Label Styling === */
+.task-page-container label {
+  display: block;
+  margin-top: 14px;
+  font-weight: bold;
+}
+
+/* === Glowing effect for completed task (prep for future) === */
+.task-card.completed {
+  border: 2px solid #4ade80;
+  box-shadow: 0 0 12px #4ade80;
+  transition: all 0.3s ease-in-out;
+}
+.hamburger-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #0a1f35;
+  color: #f5c84c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px; /* controls spacing from edges */
+  z-index: 1000;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  max-width: none;
+  margin: 0;
+}
+
+
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 0;
+}
+
+.hamburger {
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 250px;
+  background: rgb(6, 22, 39);
+  padding: 100px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: #f5c84c;
+  font-size: 1.1rem;
+  z-index: 1001;
+  transform: translateX(100%); /* HIDDEN off-screen */
+  transition: transform 0.3s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0); /* VISIBLE when clicked */
+}
+
+
+.sidebar span {
+  cursor: pointer;
+  padding: 30px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+
+.close-btn {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  font-size: 2.5rem;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  /* background-color: rgba(255, 0, 0, 0.4); */
+  z-index: 1000;
+}
+@media screen and (max-width: 500px) {
+  .sidebar {
+    width: 40vw;
   }
 }
+@media screen and (max-width: 350px) {
+  .sidebar {
+    width: 30vw;
+  }
+}
+/* Gym checkbox style */
+.checkbox-group {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px; /* Reduced gap */
+  margin-bottom: 15px; /* Reduced bottom margin */
+}
+
+.styled-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Reduced gap */
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 8px 12px; /* Reduced padding */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  user-select: none;
+  transition: 0.2s ease;
+}
+
+/* Style for the checkbox itself */
+.styled-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f5c84c;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Checkmark when checked */
+.styled-checkbox input[type="checkbox"]:checked {
+  background-color: #f5c84c;
+}
+
+.styled-checkbox input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: #021d34;
+  font-size: 14px;
+  position: absolute;
+  top: 0;
+  left: 4px;
+}
+
+/* When the checkbox is hovered over, it will have a slight lift effect */
+.styled-checkbox:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Text styling */
+.styled-checkbox span {
+  font-size: 1rem;
+  color: #f5c84c;
+}
+
+
+/* .styled-checkbox:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+} */
+
+/* Rating scale buttons */
+.rating-scale {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.rating-slider {
+  width: 100%;
+  max-width: 300px;
+  height: 6px;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  appearance: none;
+}
+
+.rating-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #f5c84c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.rating-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #f5c84c;
+  min-width: 32px;
+  text-align: center;
+}
+

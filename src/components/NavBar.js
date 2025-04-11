@@ -1,0 +1,34 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function NavBar({ language = "en" }) {
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const t = {
+    en: { home: "Home", aquarium: "Aquarium", settings: "Settings", title: "GrowDaily" },
+    ar: { home: "الرئيسية", aquarium: "الحوض", settings: "الإعدادات", title: "GrowDaily" },
+  };
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeMenu = () => setMenuOpen(false);
+
+  return (
+    <>
+      <div className="hamburger-container">
+  <div className="logo">{t[language].title}</div>
+  <div className="hamburger" onClick={toggleMenu}>☰</div>
+</div>
+
+
+      <div className={`sidebar ${menuOpen ? "open" : ""}`}>
+        <div className="close-btn" onClick={closeMenu}>×</div>
+        <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
+        <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
+        <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
+      </div>
+
+      {menuOpen && <div className="overlay" onClick={closeMenu}></div>}
+    </>
+  );
+}
