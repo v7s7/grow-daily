@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import { auth } from "../firebaseConfig";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -17,13 +18,14 @@ export default function HomePage() {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [streak, setStreak] = useState(0);
   const [dailyQuote, setDailyQuote] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const userId = user?.uid;
 
   const totalTasks = selectedTasks.length;
   const completedCount = selectedTasks.filter((task) => completedTasks.includes(task)).length;
   const progressPercent = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
-
-  const user = auth.currentUser;
-  const userId = user?.uid;
 
   const activeStreakQuotes = [
     "Keep going — your future self will thank you!",
@@ -78,6 +80,18 @@ export default function HomePage() {
     navigate(`/task/${task}`);
   };
 
+ 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      } else {
+        navigate("/auth");
+      }
+      setCheckingAuth(false);
+    });
+    return () => unsubscribe();
+  }, []);
   // Load Firestore data on mount
   useEffect(() => {
     if (!userId) return;
@@ -92,6 +106,7 @@ export default function HomePage() {
         localStorage.setItem("completedTasks", JSON.stringify(data.completedTasks || {}));
         localStorage.setItem("lastStreakDate", data.lastStreakDate || "");
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -149,6 +164,9 @@ export default function HomePage() {
       setDailyQuote(localStorage.getItem("dailyQuote") || "");
     }
   }, [streak]);
+
+  // Prevent flicker before redirect
+  if (checkingAuth || !user) return null;
 
   return (
     <div style={{ direction: language === "ar" ? "rtl" : "ltr" }}>
