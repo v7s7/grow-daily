@@ -80,7 +80,7 @@ export default function HomePage() {
     navigate(`/task/${task}`);
   };
 
- 
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -103,11 +103,18 @@ export default function HomePage() {
         const data = snap.data();
         setStreak(data.streak || 0);
         setCompletedTasks(data.completedTasks?.[today] || []);
+    
+        if (data.plan && Array.isArray(data.plan)) {
+          setSelectedTasks(data.plan);
+          localStorage.setItem("tasks", JSON.stringify(data.plan));
+        }
+    
         localStorage.setItem("completedTasks", JSON.stringify(data.completedTasks || {}));
         localStorage.setItem("lastStreakDate", data.lastStreakDate || "");
       }
       setLoading(false);
     };
+    
 
     fetchData();
   }, [userId]);

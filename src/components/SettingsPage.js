@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
@@ -41,9 +43,16 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     localStorage.setItem("lang", language);
     localStorage.setItem("tasks", JSON.stringify(selectedTasks));
+
+    const user = auth.currentUser;
+    if (user) {
+      const ref = doc(db, "users", user.uid);
+      await setDoc(ref, { plan: selectedTasks }, { merge: true });
+    }
+
     navigate("/home");
   };
 
