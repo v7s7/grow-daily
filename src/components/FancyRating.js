@@ -2,13 +2,19 @@ import React from "react";
 import "./FancyRating.css";
 
 export default function FancyRating({ value, onChange, label = "Rate" }) {
-    const messages = ["Just getting started", "Warming up", "Nice effort!", "Great job!", "You're crushing it!"];
+  const messages = [
+    "Just getting started", 
+    "Warming up", 
+    "Nice effort!", 
+    "Great job!", 
+    "You're crushing it!"
+  ];
 
   return (
     <div className="fancy-rating">
       <h4>{label}</h4>
       <div className="rating-container">
-      {[5, 4, 3, 2, 1].map((num) => (
+        {[5, 4, 3, 2, 1].map((num) => (
           <React.Fragment key={num}>
             <input
               type="radio"

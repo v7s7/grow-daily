@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import NavBar from "../NavBar";
+import FancyRating from "../FancyRating"; 
+import { auth, db } from "../../firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function PhoneUsePage() {
   const navigate = useNavigate();
@@ -78,17 +82,35 @@ export default function PhoneUsePage() {
     setRating(calculateRating(phoneUseHours)); // Calculate rating based on phone hours
   }, [phoneUseHours]); // Recalculate rating whenever phone use hours change
 
-  const handleSubmit = () => {
-    const today = new Date().toISOString().split("T")[0]; // e.g., "2025-04-11"
-    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+  const handleSubmit = async () => {
+    const today = new Date().toISOString().split("T")[0];
+    const taskName = "phone"; // 🔁 Change this to "study", "water", "sleep", etc.
   
-    // mark current task as completed
+    // Local update
+    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
-    if (!completed[today].includes("phone")) {
-      completed[today].push("phone");
+    if (!completed[today].includes(taskName)) {
+      completed[today].push(taskName);
+    }
+    localStorage.setItem("completedTasks", JSON.stringify(completed));
+  
+    // Firestore update
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
+      const firestoreData = snapshot.exists() ? snapshot.data() : {};
+  
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
+      };
+  
+      await setDoc(userRef, {
+        completedTasks: updatedTasks
+      }, { merge: true });
     }
   
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
     navigate("/home");
   };
   
@@ -118,10 +140,12 @@ export default function PhoneUsePage() {
       <p>{quote}</p> {/* Display random motivational quote */}
 
       <br />
+      <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
 
       <button onClick={handleSubmit}>{t[language].submit}</button>
       <button onClick={() => navigate("/home")}>{t[language].back}</button>
-    </div>
+    </div>      <NavBar />
+    
     </div>
 
   );

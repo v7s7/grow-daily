@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavBar from "../NavBar";
+import FancyRating from "../FancyRating"; 
+import { auth, db } from "../../firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function WaterPage() {
   const navigate = useNavigate();
@@ -27,17 +31,35 @@ export default function WaterPage() {
   // Auto fill rating based on water intake
   const rating = Math.min(waterIntake, 8); // Auto-rate based on cups (max 8 cups)
 
-  const handleSubmit = () => {
-    const today = new Date().toISOString().split("T")[0]; // e.g., "2025-04-11"
-    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+  const handleSubmit = async () => {
+    const today = new Date().toISOString().split("T")[0];
+    const taskName = "water"; // 🔁 Change this to "study", "water", "sleep", etc.
   
-    // mark current task as completed
+    // Local update
+    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
-    if (!completed[today].includes("water")) {
-      completed[today].push("water");
+    if (!completed[today].includes(taskName)) {
+      completed[today].push(taskName);
+    }
+    localStorage.setItem("completedTasks", JSON.stringify(completed));
+  
+    // Firestore update
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
+      const firestoreData = snapshot.exists() ? snapshot.data() : {};
+  
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
+      };
+  
+      await setDoc(userRef, {
+        completedTasks: updatedTasks
+      }, { merge: true });
     }
   
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
     navigate("/home");
   };
   
@@ -71,6 +93,8 @@ export default function WaterPage() {
 
       <button onClick={handleSubmit}>{t[language].submit}</button>
       <button onClick={() => navigate("/home")}>{t[language].back}</button>
+            <NavBar />
+      
     </div>
   );
 }

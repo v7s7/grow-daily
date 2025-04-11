@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
+import { auth } from "../firebaseConfig";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export default function HomePage() {
   const navigate = useNavigate();
 
-  // Get language and tasks from localStorage
   const [language, setLanguage] = useState(localStorage.getItem("lang") || "en");
   const [selectedTasks, setSelectedTasks] = useState(
-    JSON.parse(localStorage.getItem("tasks") || '["quran","gym","study","water","sleep","phone","azkar", "shower"]') // Added 'shower' here
+    JSON.parse(localStorage.getItem("tasks") || '["quran","gym","study","water","sleep","phone","azkar", "shower"]')
   );
+
   const today = new Date().toISOString().split("T")[0];
-  const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-  const completedTasks = completed[today] || [];
-  const taskPoints = {
-    quran: 15,
-    study: 15,
-    gym: 15,
-    water: 10,
-    sleep: 10,
-    phone: 10,
-    azkar: 15,
-    shower: 10,
-  };
-  
-  const totalScore = completedTasks.reduce((sum, task) => {
-    return sum + (taskPoints[task] || 0);
-  }, 0);
-  
-  const userName = "Abdulaziz"; // You can replace with Firebase user displayName if needed
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [dailyQuote, setDailyQuote] = useState("");
+
+  const totalTasks = selectedTasks.length;
+  const completedCount = selectedTasks.filter((task) => completedTasks.includes(task)).length;
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
+
+  const user = auth.currentUser;
+  const userId = user?.uid;
+
+  const activeStreakQuotes = [
+    "Keep going — your future self will thank you!",
+    "You’re building something powerful. One day at a time.",
+    "Consistency isn’t flashy — it’s legendary.",
+    "Success is just small habits repeated daily.",
+    "You’re on a roll — don’t slow down!"
+  ];
+
+  const startStreakQuotes = [
+    "Every streak starts with Day 1. You got this.",
+    "It’s not about perfection — it’s about progress.",
+    "Start small. Stay consistent. Watch yourself grow.",
+    "The journey begins today — show up for yourself.",
+    "No pressure — just progress."
+  ];
 
   const t = {
     en: {
-      welcome: `Welcome, ${userName}`,
+      welcome: `Welcome`,
       progress: "Daily Progress",
       chooseLang: "Choose Language",
       tasks: {
@@ -43,11 +54,11 @@ export default function HomePage() {
         sleep: "Sleep",
         phone: "Phone Use",
         azkar: "Azkar",
-        shower: "Shower" // Added 'shower' here for the English language
+        shower: "Shower"
       },
     },
     ar: {
-      welcome: `مرحبًا، ${userName}`,
+      welcome: `مرحبًا`,
       progress: "تقدمك اليومي",
       chooseLang: "اختر اللغة",
       tasks: {
@@ -58,7 +69,7 @@ export default function HomePage() {
         sleep: "النوم",
         phone: "الهاتف",
         azkar: "الأذكار",
-        shower: "الدش" // Added 'shower' here for Arabic language
+        shower: "الدش"
       },
     },
   };
@@ -67,31 +78,121 @@ export default function HomePage() {
     navigate(`/task/${task}`);
   };
 
+  // Load Firestore data on mount
   useEffect(() => {
-    localStorage.setItem("lang", language);
-  }, [language]);
+    if (!userId) return;
+
+    const fetchData = async () => {
+      const ref = doc(db, "users", userId);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setStreak(data.streak || 0);
+        setCompletedTasks(data.completedTasks?.[today] || []);
+        localStorage.setItem("completedTasks", JSON.stringify(data.completedTasks || {}));
+        localStorage.setItem("lastStreakDate", data.lastStreakDate || "");
+      }
+    };
+
+    fetchData();
+  }, [userId]);
+
+  // Handle streak logic
+  useEffect(() => {
+    if (!userId) return;
+
+    const todayDate = new Date().toISOString().split("T")[0];
+    const yesterdayDate = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+    const lastDate = localStorage.getItem("lastStreakDate");
+
+    const updateFirestore = async (updatedStreak, completed) => {
+      const ref = doc(db, "users", userId);
+      const stored = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+      stored[today] = completed;
+      await setDoc(ref, {
+        streak: updatedStreak,
+        completedTasks: stored,
+        lastStreakDate: todayDate
+      }, { merge: true });
+
+      localStorage.setItem("streak", updatedStreak);
+      localStorage.setItem("lastStreakDate", todayDate);
+      localStorage.setItem("completedTasks", JSON.stringify(stored));
+    };
+
+    if (progressPercent === 100) {
+      if (lastDate !== todayDate) {
+        const newStreak = (lastDate === yesterdayDate) ? streak + 1 : 1;
+        setStreak(newStreak);
+        updateFirestore(newStreak, completedTasks);
+      }
+    } else {
+      if (lastDate && lastDate !== todayDate && lastDate !== yesterdayDate) {
+        setStreak(0);
+        updateFirestore(0, completedTasks);
+      }
+    }
+  }, [progressPercent, userId]);
+
+  // Handle daily quote
+  useEffect(() => {
+    const lastQuoteDate = localStorage.getItem("lastQuoteDate");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (lastQuoteDate !== today) {
+      const quotes = streak > 0 ? activeStreakQuotes : startStreakQuotes;
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      localStorage.setItem("dailyQuote", randomQuote);
+      localStorage.setItem("lastQuoteDate", today);
+      setDailyQuote(randomQuote);
+    } else {
+      setDailyQuote(localStorage.getItem("dailyQuote") || "");
+    }
+  }, [streak]);
 
   return (
     <div style={{ direction: language === "ar" ? "rtl" : "ltr" }}>
-      <h2>{t[language].welcome}</h2>
-      <h3>{t[language].progress}: {totalScore}/100</h3>
+      <h2>{t[language].welcome}, {user?.displayName || "User"}</h2>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
+        <h3 style={{ margin: 0 }}>{t[language].progress}:</h3>
+        <svg width="70" height="70">
+          <circle cx="35" cy="35" r="30" stroke="#ccc" strokeWidth="6" fill="none" />
+          <circle
+            cx="35"
+            cy="35"
+            r="30"
+            stroke="#f5c84c"
+            strokeWidth="6"
+            fill="none"
+            strokeDasharray={188.4}
+            strokeDashoffset={188.4 - (188.4 * progressPercent) / 100}
+            transform="rotate(-90 35 35)"
+          />
+          <text x="35" y="40" textAnchor="middle" fontSize="12" fill="#f5c84c" fontWeight="bold">
+            {progressPercent}%
+          </text>
+        </svg>
+      </div>
+
+      <p style={{ color: streak === 0 ? "#f5c84c" : "#4CAF50", fontSize: "14px", marginTop: "4px" }}>
+        🔥 Streak: {streak} — “{dailyQuote}”
+      </p>
 
       <div className="task-grid">
         {selectedTasks.map((task) => (
           <div
-  key={task}
-  className={`task-card ${completedTasks.includes(task) ? "completed" : ""}`}
-  onClick={() => goToTask(task)}
->
+            key={task}
+            className={`task-card ${completedTasks.includes(task) ? "completed" : ""}`}
+            onClick={() => goToTask(task)}
+          >
             <img src={`/icons/${task}.png`} alt={task} />
             {t[language].tasks[task]}
           </div>
-          
         ))}
       </div>
 
       <hr />
-
       <NavBar language={language} />
     </div>
   );

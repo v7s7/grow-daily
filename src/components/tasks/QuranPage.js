@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
+import FancyRating from "../FancyRating";
+import { auth, db } from "../../firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function QuranPage() {
   const navigate = useNavigate();
@@ -14,6 +17,8 @@ export default function QuranPage() {
 
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
+  const user = auth.currentUser;
+  console.log("Logged in user:", auth.currentUser);
 
   const t = {
     en: {
@@ -25,7 +30,7 @@ export default function QuranPage() {
       resume: "Resume",
       stop: "Stop",
       pages: "Pages Read (optional)",
-      rating: "Focus Rating (0–10, optional)",
+      rating: "Focus Rating (1–5, optional)",
       submit: "Submit",
     },
     ar: {
@@ -37,7 +42,7 @@ export default function QuranPage() {
       resume: "استئناف",
       stop: "إيقاف",
       pages: "عدد الصفحات المقروءة (اختياري)",
-      rating: "تقييم التركيز (من 0 إلى 10، اختياري)",
+      rating: "تقييم التركيز (من 1 إلى 5 , اختياري)",
       submit: "إرسال",
     },
   };
@@ -70,20 +75,36 @@ export default function QuranPage() {
     setIsPaused(false);
   };
 
-  const handleSubmit = () => {
-    const today = new Date().toISOString().split("T")[0]; // e.g., "2025-04-11"
+  const handleSubmit = async () => {
+    const today = new Date().toISOString().split("T")[0];
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-  
-    // mark current task as completed
+
+    // Local update
     completed[today] = completed[today] || [];
     if (!completed[today].includes("quran")) {
       completed[today].push("quran");
     }
-  
     localStorage.setItem("completedTasks", JSON.stringify(completed));
+
+    // Firestore update
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
+      const firestoreData = snapshot.exists() ? snapshot.data() : {};
+
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), "quran"])]
+      };
+
+      await setDoc(userRef, {
+        completedTasks: updatedTasks
+      }, { merge: true });
+    }
+
     navigate("/home");
   };
-  
 
   return (
     <div className="task-page-container" style={{ direction: language === "ar" ? "rtl" : "ltr", padding: 20 }}>
@@ -137,10 +158,7 @@ export default function QuranPage() {
         <>
           <label>{t[language].pages}</label>
           <input type="number" value={pages} onChange={(e) => setPages(e.target.value)} />
-
-          <label>{t[language].rating}</label>
-          <input type="number" value={rating} onChange={(e) => setRating(e.target.value)} min="0" max="10" />
-
+          <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
           <br />
           <button onClick={handleSubmit} style={{ marginTop: 10 }}>{t[language].submit}</button>
         </>

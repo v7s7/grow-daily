@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
-import StyledSlider from "../StyledSlider";
-import FancyRating from "../FancyRating";
+import FancyRating from "../FancyRating"; // Import FancyRating
+import { auth, db } from "../../firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function GymPage() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function GymPage() {
     arms: false,
     shoulders: false,
   });
+
   const [rating, setRating] = useState(0);
 
   const t = {
@@ -42,16 +44,43 @@ export default function GymPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-
-    completed[today] = completed[today] || [];
-    if (!completed[today].includes("gym")) {
-      completed[today].push("gym");
+  useEffect(() => {
+    // Load previously saved rating (if any) from localStorage
+    const savedRating = JSON.parse(localStorage.getItem("gymRating"));
+    if (savedRating) {
+      setRating(savedRating);
     }
+  }, []);
 
+  const handleSubmit = async () => {
+    const today = new Date().toISOString().split("T")[0];
+    const taskName = "gym"; // 🔁 Change this to "study", "water", "sleep", etc.
+  
+    // Local update
+    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+    completed[today] = completed[today] || [];
+    if (!completed[today].includes(taskName)) {
+      completed[today].push(taskName);
+    }
     localStorage.setItem("completedTasks", JSON.stringify(completed));
+  
+    // Firestore update
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
+      const firestoreData = snapshot.exists() ? snapshot.data() : {};
+  
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
+      };
+  
+      await setDoc(userRef, {
+        completedTasks: updatedTasks
+      }, { merge: true });
+    }
+  
     navigate("/home");
   };
 
@@ -74,7 +103,7 @@ export default function GymPage() {
         ))}
       </div>
 
-      <h4 style={{ marginTop: "20px" }}>{t[language].rating} (0–10):</h4>
+      {/* <h4 style={{ marginTop: "20px" }}></h4> */}
       <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
 
       <div className="button-center">
