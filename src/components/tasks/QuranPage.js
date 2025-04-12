@@ -160,7 +160,12 @@ export default function QuranPage() {
           <input type="number" value={pages} onChange={(e) => setPages(e.target.value)} />
           <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
           <br />
-          <button onClick={handleSubmit} style={{ marginTop: 10 }}>{t[language].submit}</button>
+          <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
+  <button onClick={handleSubmit}>{t[language].submit}</button>
+  <button onClick={() => navigate("/home")}>
+    {t[language]?.back || "Back to Home"}
+  </button>
+</div>
         </>
       )}
 

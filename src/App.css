@@ -477,4 +477,8 @@ button:disabled {
   min-width: 32px;
   text-align: center;
 }
+.task-page-container h2 {
+  text-align: center;
+  width: 100%;
+}
 

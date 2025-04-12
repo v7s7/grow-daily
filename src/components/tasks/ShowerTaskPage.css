@@ -1,0 +1,40 @@
+
+.shower-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 20vh;
+    text-align: center;
+  }
+  
+  .shower-title {
+    color: #f5c84c;
+  }
+  
+  .shower-text {
+    color: white;
+    margin-bottom: 10px;
+  }
+  
+  .shower-button {
+    background-color: #f5c84c;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  .shower-divider {
+    width: 90%;
+    border-color: white;
+  }
+  .shower-button-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+  

@@ -28,7 +28,7 @@ export default function StudyPage() {
       resume: "Resume",
       stop: "Stop",
       subject: "Subject Name (optional)",
-      rating: "Focus Rating (0–10, optional)",
+      rating: "Focus Rating (1–5, optional)",
       submit: "Submit",
     },
     ar: {
@@ -40,7 +40,7 @@ export default function StudyPage() {
       resume: "استئناف",
       stop: "إيقاف",
       subject: "اسم المادة (اختياري)",
-      rating: "تقييم التركيز (من 0 إلى 10، اختياري)",
+      rating: "تقييم التركيز (من 1 إلى 5، اختياري)",
       submit: "إرسال",
     },
   };
@@ -158,11 +158,15 @@ export default function StudyPage() {
           <label>{t[language].subject}</label>
           <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} />
 
-          <label>{t[language].rating}</label>
-          <input type="number" value={rating} onChange={(e) => setRating(e.target.value)} min="0" max="10" />
+          <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
 
           <br />
-          <button onClick={handleSubmit} style={{ marginTop: 10 }}>{t[language].submit}</button>
+          <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
+  <button onClick={handleSubmit}>{t[language].submit}</button>
+  <button onClick={() => navigate("/home")}>
+    {t[language]?.back || "Back to Home"}
+  </button>
+</div>
         </>
       )}
 
