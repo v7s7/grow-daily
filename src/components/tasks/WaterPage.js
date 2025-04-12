@@ -106,44 +106,47 @@ export default function WaterPage() {
   
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>{t[language].title}</h2>
-
-      <p style={{ textAlign: "center", color: "#f5c84c", fontWeight: "bold" }}>
-  {t[language].waterIntake}
-</p>
-      <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 10 }}>
-        {[...Array(8)].map((_, i) => (
-          <img
-            key={i}
-            src={i < waterIntake ? "/icons/cup-filled.png" : "/icons/cup-empty.png"}
-            alt={`cup ${i + 1}`}
-            style={{
-              width: "40px",
-              height: "40px",
-              cursor: "pointer",
-              transition: "transform 0.2s",
-            }}
-            onClick={() => handleCupSelect(i)}
-          />
-        ))}
+    <div className="task-page-container">  {/* ⬅️ wrap everything in this */}
+      <div style={{ padding: 20 }}>
+        <h2 style={{ textAlign: "center" }}>{t[language].title}</h2>
+  
+        <p style={{ textAlign: "center", color: "#f5c84c", fontWeight: "bold" }}>
+          {t[language].waterIntake}
+        </p>
+  
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 10 }}>
+          {[...Array(8)].map((_, i) => (
+            <img
+              key={i}
+              src={i < waterIntake ? "/icons/cup-filled.png" : "/icons/cup-empty.png"}
+              alt={`cup ${i + 1}`}
+              style={{
+                width: "40px",
+                height: "40px",
+                cursor: "pointer",
+                transition: "transform 0.2s",
+              }}
+              onClick={() => handleCupSelect(i)}
+            />
+          ))}
+        </div>
+  
+        <p style={{ color: "#f5c84c", fontWeight: "bold", textAlign: "center" }}>
+          {t[language].rating} {waterIntake} / 8 {language === "en" ? "cups" : "أكواب"} 💧
+        </p>
+  
+        <p style={{ fontSize: "1.2rem", fontWeight: "bold", textAlign: "center" }}>
+        ﴾ وَجَعَلْنَا مِنَ الْمَاءِ كُلَّ شَيْءٍ حَيٍّ ﴿
+        </p>
+  
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
+          <button onClick={handleSubmit}>{t[language].submit}</button>
+          <button onClick={() => navigate("/home")}>{t[language].back}</button>
+        </div>
       </div>
-
-      <p style={{ color: "#f5c84c", fontWeight: "bold", textAlign: "center" }}>
-        {t[language].rating} {waterIntake} / 8 {language === "en" ? "cups" : "أكواب"} 💧
-      </p>
-
-      <p style={{ fontSize: "1.2rem", fontWeight: "bold", textAlign: "center" }}>
-        وَجَعَلْنَا مِنَ الْمَاءِ كُلَّ شَيْءٍ حَيٍّ
-      </p>
-
-      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
-  <button onClick={handleSubmit}>{t[language].submit}</button>
-  <button onClick={() => navigate("/home")}>{t[language].back}</button>
-</div>
-
-
+  
       <NavBar />
     </div>
   );
+  
 }

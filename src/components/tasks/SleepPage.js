@@ -60,9 +60,12 @@ export default function SleepPage() {
 
   const calculateRating = (hours) => {
     const h = Number(hours);
+  if ( h=== 0) return 0;
     if (h >= 7 && h <= 9) return 10;
     if (h < 7) return Math.max(0, 10 - (7 - h));
     if (h > 9) return Math.max(0, 10 - (h - 9));
+    if ( h=== 24) return 0;
+
     return 0;
   };
 
@@ -150,8 +153,12 @@ export default function SleepPage() {
 
         <br />
 
-        <button onClick={handleSubmit}>{t[language].submit}</button>
-        <button onClick={() => navigate("/home")}>{t[language].back}</button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
+  <button onClick={handleSubmit}>{t[language].submit}</button>
+  <button onClick={() => navigate("/home")}>
+    {t[language]?.back || "Back to Home"}
+  </button>
+</div>
       </div>
 
       <NavBar />

@@ -5,7 +5,7 @@ import { auth } from "../firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import "./SettingsPage.css";
-
+import NavBar from "./NavBar";
 export default function SettingsPage() {
   const navigate = useNavigate();
 
@@ -121,6 +121,8 @@ export default function SettingsPage() {
       <button onClick={handleLogout} className="logout-button">
         {t[language].logout}
       </button>
+            <NavBar />
+      
     </div>
   );
 }

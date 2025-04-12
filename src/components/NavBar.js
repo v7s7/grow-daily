@@ -16,10 +16,15 @@ export default function NavBar({ language = "en" }) {
   return (
     <>
       <div className="hamburger-container">
-  <div className="logo">{t[language].title}</div>
-  <div className="hamburger" onClick={toggleMenu}>☰</div>
-</div>
-
+        <div
+          className="logo"
+          style={{ cursor: "pointer", minWidth: "100px", textAlign: "left" }}
+          onClick={() => navigate("/home")}
+        >
+          {t[language].title}
+        </div>
+        <div className="hamburger" onClick={toggleMenu}>☰</div>
+      </div>
 
       <div className={`sidebar ${menuOpen ? "open" : ""}`}>
         <div className="close-btn" onClick={closeMenu}>×</div>

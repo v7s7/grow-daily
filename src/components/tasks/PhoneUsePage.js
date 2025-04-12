@@ -154,8 +154,12 @@ export default function PhoneUsePage() {
 
         <br />
 
-        <button onClick={handleSubmit}>{t[language].submit}</button>
-        <button onClick={() => navigate("/home")}>{t[language].back}</button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
+  <button onClick={handleSubmit}>{t[language].submit}</button>
+  <button onClick={() => navigate("/home")}>
+    {t[language]?.back || "Back to Home"}
+  </button>
+</div>
       </div>
 
       <NavBar />

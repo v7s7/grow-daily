@@ -8,14 +8,17 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 export default function GymPage() {
   const navigate = useNavigate();
   const language = localStorage.getItem("lang") || "en";
-
+  const [error, setError] = useState("");
   const [workouts, setWorkouts] = useState({
-    back: false,
+    fullbody: false,
     chest: false,
-    legs: false,
+    back: false,
     arms: false,
     shoulders: false,
+    legs: false,
+    cardio: false,
   });
+  
 
   const [rating, setRating] = useState(0);
 
@@ -53,10 +56,18 @@ export default function GymPage() {
   }, []);
 
   const handleSubmit = async () => {
-    const today = new Date().toISOString().split("T")[0];
-    const taskName = "gym"; // 🔁 Change this to "study", "water", "sleep", etc.
+    const selectedWorkouts = Object.values(workouts).filter(Boolean).length;
   
-    // Local update
+    if (selectedWorkouts === 0 || rating === 0) {
+      setError(language === "ar"
+        ? "يرجى اختيار تمرين واحد على الأقل وتقييم التمرين"
+        : "Please select at least one workout and rate your session");
+      return;
+    }
+  
+    const today = new Date().toISOString().split("T")[0];
+    const taskName = "gym";
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
@@ -64,7 +75,6 @@ export default function GymPage() {
     }
     localStorage.setItem("completedTasks", JSON.stringify(completed));
   
-    // Firestore update
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
@@ -76,13 +86,24 @@ export default function GymPage() {
         [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
   
+      const updatedGym = {
+        ...(firestoreData.gym || {}),
+        [today]: {
+          selected: Object.keys(workouts).filter((w) => workouts[w]),
+          rating,
+        }
+      };
+  
       await setDoc(userRef, {
-        completedTasks: updatedTasks
+        completedTasks: updatedTasks,
+        gym: updatedGym
       }, { merge: true });
     }
   
+    setError("");
     navigate("/home");
   };
+  
 
   return (
     <div className="task-page-container">
@@ -105,6 +126,11 @@ export default function GymPage() {
 
       {/* <h4 style={{ marginTop: "20px" }}></h4> */}
       <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
+      {error && (
+  <p style={{ color: "#ff5e57", fontWeight: "bold", textAlign: "center", marginTop: 10 }}>
+    {error}
+  </p>
+)}
 
       <div className="button-center">
         <button onClick={handleSubmit}>{t[language].submit}</button>

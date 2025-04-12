@@ -14,6 +14,7 @@ export default function StudyPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [subject, setSubject] = useState("");
   const [rating, setRating] = useState(0);
+  const [error, setError] = useState(""); // ✅ error message
 
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
@@ -30,6 +31,7 @@ export default function StudyPage() {
       subject: "Subject Name (optional)",
       rating: "Focus Rating (1–5, optional)",
       submit: "Submit",
+      back: "Back to Home"
     },
     ar: {
       title: "وضع التركيز - الدراسة",
@@ -42,6 +44,7 @@ export default function StudyPage() {
       subject: "اسم المادة (اختياري)",
       rating: "تقييم التركيز (من 1 إلى 5، اختياري)",
       submit: "إرسال",
+      back: "العودة للرئيسية"
     },
   };
 
@@ -74,34 +77,50 @@ export default function StudyPage() {
   };
 
   const handleSubmit = async () => {
+    if (rating === 0 || subject.trim() === "") {
+      setError(language === "ar"
+        ? "يرجى إدخال اسم المادة مع تقييم التركيز"
+        : "Please enter subject and choose a focus rating");
+      return;
+    }
+    
+
     const today = new Date().toISOString().split("T")[0];
-    const taskName = "study"; // 🔁 Change this to "study", "water", "sleep", etc.
-  
-    // Local update
+    const taskName = "study";
+
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
     }
     localStorage.setItem("completedTasks", JSON.stringify(completed));
-  
-    // Firestore update
+
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-  
+
       const updatedTasks = {
         ...(firestoreData.completedTasks || {}),
         [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
-  
+
+      const updatedStudy = {
+        ...(firestoreData.study || {}),
+        [today]: {
+          subject: subject.trim(),
+          rating
+        }
+      };
+
       await setDoc(userRef, {
-        completedTasks: updatedTasks
+        completedTasks: updatedTasks,
+        study: updatedStudy
       }, { merge: true });
     }
-  
+
+    setError(""); 
     navigate("/home");
   };
 
@@ -160,13 +179,18 @@ export default function StudyPage() {
 
           <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
 
-          <br />
+          {error && (
+            <p style={{ color: "#ff5e57", fontWeight: "bold", textAlign: "center", marginTop: 10 }}>
+              {error}
+            </p>
+          )}
+
           <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
-  <button onClick={handleSubmit}>{t[language].submit}</button>
-  <button onClick={() => navigate("/home")}>
-    {t[language]?.back || "Back to Home"}
-  </button>
-</div>
+            <button onClick={handleSubmit}>{t[language].submit}</button>
+            <button onClick={() => navigate("/home")}>
+              {t[language]?.back || "Back to Home"}
+            </button>
+          </div>
         </>
       )}
 

@@ -14,7 +14,8 @@ export default function QuranPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [pages, setPages] = useState("");
   const [rating, setRating] = useState(0);
-
+  const [surah, setSurah] = useState("");
+  const [error, setError] = useState("");
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
   const user = auth.currentUser;
@@ -29,7 +30,7 @@ export default function QuranPage() {
       pause: "Pause",
       resume: "Resume",
       stop: "Stop",
-      pages: "Pages Read (optional)",
+      pages: "Pages Read",
       rating: "Focus Rating (1–5, optional)",
       submit: "Submit",
     },
@@ -41,7 +42,7 @@ export default function QuranPage() {
       pause: "إيقاف مؤقت",
       resume: "استئناف",
       stop: "إيقاف",
-      pages: "عدد الصفحات المقروءة (اختياري)",
+      pages: "عدد الصفحات المقروءة",
       rating: "تقييم التركيز (من 1 إلى 5 , اختياري)",
       submit: "إرسال",
     },
@@ -76,35 +77,59 @@ export default function QuranPage() {
   };
 
   const handleSubmit = async () => {
+    if (
+      rating === 0 ||
+      ((pages === "" || pages === "0") && surah.trim() === "")
+    ) {
+      setError(language === "ar"
+        ? "يرجى إدخال الصفحات أو السورة مع تقييم التركيز"
+        : "Please enter pages or surah name and choose a focus rating");
+      return;
+    }
+    
+      
     const today = new Date().toISOString().split("T")[0];
+    const taskName = "quran";
+  
+    // Save to local
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-
-    // Local update
     completed[today] = completed[today] || [];
-    if (!completed[today].includes("quran")) {
-      completed[today].push("quran");
+    if (!completed[today].includes(taskName)) {
+      completed[today].push(taskName);
     }
     localStorage.setItem("completedTasks", JSON.stringify(completed));
-
-    // Firestore update
+  
+    // Save to Firestore
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
+  
       const updatedTasks = {
         ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), "quran"])]
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
-
+  
+      const updatedQuran = {
+        ...(firestoreData.quran || {}),
+        [today]: {
+          pages: Number(pages),
+          surah: surah.trim(),
+          rating: rating
+        },
+      };
+  
       await setDoc(userRef, {
-        completedTasks: updatedTasks
+        completedTasks: updatedTasks,
+        quran: updatedQuran
       }, { merge: true });
     }
-
+  
+    setError(""); 
     navigate("/home");
-  };
+      };
+  
 
   return (
     <div className="task-page-container" style={{ direction: language === "ar" ? "rtl" : "ltr", padding: 20 }}>
@@ -156,10 +181,24 @@ export default function QuranPage() {
 
       {!isRunning && timeLeft === 0 && (
         <>
-          <label>{t[language].pages}</label>
+          <label>{language === "ar" ? "اسم السورة " : "Surah name "}</label>
+<input
+  type="text"
+  value={surah}
+  onChange={(e) => setSurah(e.target.value)}
+  placeholder={language === "ar" ? "الفاتحة" : "Al-Fatiha"}
+/>
+<label>{t[language].pages}</label>
+
           <input type="number" value={pages} onChange={(e) => setPages(e.target.value)} />
           <FancyRating value={rating} onChange={(val) => setRating(val)} label={t[language].rating} />
           <br />
+          {error && (
+  <p style={{ color: "#ff5e57", fontWeight: "bold", textAlign: "center", marginTop: 10 }}>
+    {error}
+  </p>
+)}
+
           <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
   <button onClick={handleSubmit}>{t[language].submit}</button>
   <button onClick={() => navigate("/home")}>

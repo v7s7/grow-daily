@@ -52,7 +52,6 @@ export default function ShowerTaskPage() {
   </button>
 </div>
 
-      {/* <hr className="shower-divider" /> */}
       <NavBar />
     </div>
   );
