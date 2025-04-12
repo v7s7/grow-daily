@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function AuthPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -38,6 +39,12 @@ export default function AuthPage() {
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCred.user, {
           displayName: name,
+        });
+
+        // Save user name and email in Firestore
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          name: name,
+          email: email,
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
