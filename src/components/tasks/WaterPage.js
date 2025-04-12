@@ -111,9 +111,6 @@ export default function WaterPage() {
 
       <p>{t[language].waterIntake}</p>
 <p className="liter-indicator">
-  {language === "en"
-    ? `${(waterIntake / 4).toFixed(1)} L (4 cups = 1 liter)`
-    : `${(waterIntake / 4).toFixed(1)} لتر (كل ٤ أكواب = ١ لتر)`}
 </p>
 
       <div className="cups-container">
