@@ -7,6 +7,8 @@ body {
   color: #f8cc6a;
   font-family: 'Inter', sans-serif;
   padding-top: 80px; /* space for fixed navbar */
+  font-family: 'Cairo', 'Inter', sans-serif;
+
 }
 
 h2, h3 {
@@ -480,5 +482,10 @@ button:disabled {
 .task-page-container h2 {
   text-align: center;
   width: 100%;
+}
+.task-card.in-progress {
+  border: 2px solid #f5c84c;
+  box-shadow: 0 0 12px #f5c84c;
+  transition: all 0.3s ease-in-out;
 }
 

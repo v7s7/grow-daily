@@ -11,10 +11,10 @@ export default function SettingsPage() {
 
   const [language, setLanguage] = useState(localStorage.getItem("lang") || "en");
   const [selectedTasks, setSelectedTasks] = useState(
-    JSON.parse(localStorage.getItem("tasks") || '["quran", "gym", "study", "water", "sleep", "phone", "azkar", "shower"]')
+    JSON.parse(localStorage.getItem("tasks") || '["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"]')
   );
 
-  const taskOptions = ["quran", "gym", "study", "water", "sleep", "phone", "azkar", "shower"];
+  const taskOptions = ["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"];
 
   const t = {
     en: {

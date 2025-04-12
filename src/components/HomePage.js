@@ -11,7 +11,7 @@ export default function HomePage() {
 
   const [language, setLanguage] = useState(localStorage.getItem("lang") || "en");
   const [selectedTasks, setSelectedTasks] = useState(
-    JSON.parse(localStorage.getItem("tasks") || '["quran","gym","study","water","sleep","phone","azkar", "shower"]')
+    JSON.parse(localStorage.getItem("tasks") || '["quran","gym","study","water","sleep","phone","athkar", "shower"]')
   );
 
   const today = new Date().toISOString().split("T")[0];
@@ -55,7 +55,7 @@ export default function HomePage() {
         water: "Water",
         sleep: "Sleep",
         phone: "Phone Use",
-        azkar: "Azkar",
+        athkar: "Athkar",
         shower: "Shower"
       },
     },
@@ -70,7 +70,7 @@ export default function HomePage() {
         water: "الماء",
         sleep: "النوم",
         phone: "الهاتف",
-        azkar: "الأذكار",
+        athkar: "الأذكار",
         shower: "الدش"
       },
     },
@@ -205,17 +205,42 @@ export default function HomePage() {
       </p>
 
       <div className="task-grid">
-        {selectedTasks.map((task) => (
-          <div
-            key={task}
-            className={`task-card ${completedTasks.includes(task) ? "completed" : ""}`}
-            onClick={() => goToTask(task)}
-          >
-            <img src={`/icons/${task}.png`} alt={task} />
-            {t[language].tasks[task]}
-          </div>
-        ))}
+  {selectedTasks.map((task) => {
+    let className = "task-card";
+
+    if (task === "athkar") {
+      const today = new Date().toISOString().split("T")[0];
+      const sabahDone = completedTasks.includes("sabah_athkar");
+      const masaaDone = completedTasks.includes("masaa_athkar");
+
+      const sabahProgress = JSON.parse(localStorage.getItem("sabah_athkar_progress") || "{}");
+      const masaaProgress = JSON.parse(localStorage.getItem("masaa_athkar_progress") || "{}");
+
+      const sabahStarted = sabahProgress.current > 0 || sabahProgress.count > 0 || sabahDone;
+      const masaaStarted = masaaProgress.current > 0 || masaaProgress.count > 0 || masaaDone;
+
+      const fullCompleted = sabahDone && masaaDone;
+
+      if (fullCompleted) {
+        className += " completed";
+      } else if (sabahStarted || masaaStarted) {
+        className += " in-progress";
+      }
+    } else {
+      if (completedTasks.includes(task)) {
+        className += " completed";
+      }
+    }
+
+    return (
+      <div key={task} className={className} onClick={() => goToTask(task)}>
+        <img src={`/icons/${task}.png`} alt={task} />
+        {t[language].tasks[task]}
       </div>
+    );
+  })}
+</div>
+
 
       <hr />
       <NavBar language={language} />

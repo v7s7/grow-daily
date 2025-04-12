@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AuthPage from "./components/AuthPage";
@@ -12,7 +11,9 @@ import GymPage from "./components/tasks/GymPage";
 import WaterPage from "./components/tasks/WaterPage";
 import SleepPage from "./components/tasks/SleepPage";
 import PhoneUsePage from "./components/tasks/PhoneUsePage";
-import AzkarPage from "./components/tasks/AzkarPage";
+import AthkarPage from "./components/tasks/AthkarPage";
+import SabahAthkarPage from "./components/tasks/SabahAthkarPage";
+import MasaaAthkarPage from "./components/tasks/MasaaAthkarPage";
 import ShowerTaskPage from "./components/tasks/ShowerTaskPage";
 import './App.css';
 
@@ -21,7 +22,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AuthPage />} />
-        <Route path="/auth" element={<AuthPage />} /> {/* ✅ added this line */}
+        <Route path="/auth" element={<AuthPage />} /> 
         <Route path="/home" element={<HomePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/aquarium" element={<AquariumPage />} />
@@ -32,7 +33,9 @@ function App() {
         <Route path="/task/water" element={<WaterPage />} />
         <Route path="/task/sleep" element={<SleepPage />} />
         <Route path="/task/phone" element={<PhoneUsePage />} />
-        <Route path="/task/azkar" element={<AzkarPage />} />
+        <Route path="/task/athkar" element={<AthkarPage />} />
+        <Route path="/task/athkar/sabah" element={<SabahAthkarPage />} />
+        <Route path="/task/athkar/masaa" element={<MasaaAthkarPage />} /> 
         <Route path="/task/shower" element={<ShowerTaskPage />} />
       </Routes>
     </Router>
