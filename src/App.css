@@ -125,16 +125,16 @@ button:hover {
 }
 
 .task-icon {
-  width: 60%;
+  width: 100%;
   height: auto;
-  max-height: 60px;
+  max-height: 100%;
   object-fit: contain;
   margin-bottom: 10px;
 }
 
 
 img {
-  max-width: 90%;
+  max-width: 80%;
   height: auto;
   max-height: 150px;
 }
@@ -587,22 +587,29 @@ button:disabled {
   border: 2px solid #4caf50;
   box-shadow: 0 0 12px 1px #4caf50;
 }
-  @media (max-width: 400px) {
-    .task-card {
-      padding: 8px;
-      border-radius: 12px;
-      aspect-ratio: 1 / 1;
-      font-size: 0.9rem;
-    }
-  
-    .task-icon {
-      width: 70%;         /* ✅ more visible on small screens */
-      max-height: 60px;
-      margin-bottom: 6px;
-    }
-  img {
-    max-width: 70%;
+@media (max-width: 400px) {
+  .task-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 0 12px;
+  }
+
+  .task-card {
+    aspect-ratio: 1 / 1;
+    width: 80%;
     height: auto;
-    max-height: 150px;
+    max-width: none;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .task-card img {
+    width: 100%;
+    max-height: 70px;
+    object-fit: contain;
+    margin-bottom: 5px;
   }
 }
+
+
+

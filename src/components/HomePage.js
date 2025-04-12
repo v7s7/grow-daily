@@ -249,8 +249,8 @@ export default function HomePage() {
 
     return (
       <div key={task} className={className} onClick={() => goToTask(task)}>
-        <img src={`/icons/${task}.png`} alt={task} />
-        {t[language].tasks[task]}
+<img src={`/icons/${task}.png`} alt={task} className="task-icon" />
+{t[language].tasks[task]}
       </div>
     );
   })}
