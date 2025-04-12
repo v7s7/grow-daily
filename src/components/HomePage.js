@@ -24,8 +24,23 @@ export default function HomePage() {
   const userId = user?.uid;
 
   const totalTasks = selectedTasks.length;
-  const completedCount = selectedTasks.filter((task) => completedTasks.includes(task)).length;
-  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
+  const calculateCompletedCount = () => {
+    return selectedTasks.reduce((count, task) => {
+      if (task === "athkar") {
+        const sabahDone = completedTasks.includes("sabah_athkar");
+        const masaaDone = completedTasks.includes("masaa_athkar");
+  
+        if (sabahDone && masaaDone) return count + 1;
+        if (sabahDone || masaaDone) return count + 0.5;
+        return count;
+      } else {
+        return completedTasks.includes(task) ? count + 1 : count;
+      }
+    }, 0);
+  };
+  
+  const completedCount = calculateCompletedCount();
+    const progressPercent = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
 
   const activeStreakQuotes = [
     "Keep going — your future self will thank you!",

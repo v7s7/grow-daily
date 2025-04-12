@@ -48,7 +48,9 @@ export default function SabahAthkarPage() {
   };
 
   const handlePrev = () => {
-    if (current > 0) {
+    if (current === 0) {
+      navigate("/task/athkar");
+    } else {
       const newCurrent = current - 1;
       setCurrent(newCurrent);
       setCount(0);
@@ -81,7 +83,6 @@ export default function SabahAthkarPage() {
       await setDoc(ref, { completedTasks: updated }, { merge: true });
     }
 
-    // Navigate to Home after submission
     window.location.href = "/home";
   };
 
@@ -139,7 +140,7 @@ export default function SabahAthkarPage() {
         )}
 
         <div className="button-wrapper">
-          <button onClick={handlePrev}>السابق</button>
+          <button onClick={handlePrev}>{current === 0 ? "الرجوع" : "السابق"}</button>
           {isLastThikr ? (
             <button onClick={handleSubmit} className="next-button">إرسال</button>
           ) : (
