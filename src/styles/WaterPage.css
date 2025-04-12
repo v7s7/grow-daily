@@ -1,0 +1,111 @@
+/* Container for the whole page */
+.task-page-container {
+    max-width: 420px;
+    margin: 40px auto;
+    padding: 24px;
+    background: rgba(10, 31, 53, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    color: white;
+  }
+  
+  /* Title and subtitles */
+  .task-page-container h2 {
+    text-align: center;
+    color: #f8cc6a;
+    margin-bottom: 16px;
+  }
+  
+  .task-page-container p {
+    text-align: center;
+    font-weight: bold;
+    color: #f8cc6a;
+    margin-bottom: 12px;
+  }
+  
+  /* Quran verse style */
+  .task-page-container .quran-verse {
+    font-size: 1.2rem;
+    color: white;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  
+  /* Cups container */
+  .cups-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  /* Cup icons */
+  .cup-icon {
+    width: 12vw;
+    max-width: 48px;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .cup-icon:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Buttons */
+  .water-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .water-buttons button {
+    background-color: #f8cc6a;
+    color: #0a1f35;
+    font-weight: bold;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  /* .water-buttons button:hover {
+    background-color: #ffe179;
+  } */
+  
+  /* Responsive tweaks */
+  @media (max-width: 400px) {
+    .task-page-container {
+      padding: 16px;
+    }
+  
+    .task-page-container h2 {
+      font-size: 1.1rem;
+    }
+  
+    .cup-icon {
+      width: 14vw;
+    }
+  }
+  .quran-verse {
+    font-size: 1.2rem;
+    color: white;
+    margin: 8px auto 16px auto;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px; /* adjust if needed */
+  }
+  .liter-indicator {
+    color: #a0e8ff;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 4px;
+    font-size: 1rem;
+  }
+  
