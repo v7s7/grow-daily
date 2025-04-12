@@ -103,7 +103,7 @@
 
 .task-card.in-progress {
   box-shadow: 0 0 12px 2px #f5c84c !important;
-  border: 2px dashed #f5c84c !important;
+  border: 2px solid #f5c84c !important;
   transition: all 0.3s ease-in-out;
 }
 
