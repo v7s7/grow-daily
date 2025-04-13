@@ -21,11 +21,12 @@
 }
 
 .thikr-text {
-  color: #f8cc6a;
+  /* color:rgb(231, 231, 231) !important; */
   font-size: 1.1rem;
   white-space: pre-wrap;
   line-height: 2;
-  margin-bottom: 16px;
+  margin-bottom: 16px !important;
+  line-height: 45px;
 }
 
 .thikr-benefit {

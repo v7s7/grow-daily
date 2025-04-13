@@ -6,6 +6,8 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+
 
 export default function AuthPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -13,6 +15,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const navigate = useNavigate();
 
   const t = {
     en: {
@@ -49,7 +52,7 @@ export default function AuthPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      window.location.href = "/home";
+      navigate("/home");
     } catch (err) {
       alert(err.message);
     }
