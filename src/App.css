@@ -613,3 +613,21 @@ button:disabled {
 
 
 
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #021d34;
+}
+
+.fade-in {
+  font-size: 2rem;
+  color: #f8cc6a;
+  animation: fade 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes fade {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}

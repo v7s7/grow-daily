@@ -34,7 +34,12 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (checking) return <div>Loading...</div>;
+  if (checking) return (
+    <div className="loading-screen">
+      <h1 className="fade-in">Ready to GrowDaily?</h1>
+    </div>
+  );
+  
 
   return (
     <Router>
