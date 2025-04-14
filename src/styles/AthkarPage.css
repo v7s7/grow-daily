@@ -30,7 +30,7 @@
 }
 
 .thikr-benefit {
-  color: #f5c84c;
+  color:rgb(255, 255, 255) !important;
   font-size: 0.9rem;
   margin-bottom: 16px;
   font-weight: bold;
