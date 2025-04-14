@@ -319,7 +319,9 @@ button:disabled {
   padding: 0;
 }
 
-
+.progress-bar{
+  background-color: #f5c84c;
+}
 
 .sidebar {
   position: fixed;

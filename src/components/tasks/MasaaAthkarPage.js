@@ -86,7 +86,7 @@ export default function MasaaAthkarPage() {
     window.location.href = "/home";
   };
 
-  const circleRadius = 30;
+  const circleRadius = 40;
   const circumference = 2 * Math.PI * circleRadius;
   const percentage = thikr.count > 1 ? count / thikr.count : 1;
   const offset = circumference - percentage * circumference;
@@ -105,7 +105,7 @@ export default function MasaaAthkarPage() {
 
       {/* Progress bar */}
       <div style={{ marginBottom: "12px" }}>
-        <progress
+      <progress className="athkar-progress"
           value={current + 1}
           max={masaaAthkar.length}
           style={{
@@ -113,7 +113,7 @@ export default function MasaaAthkarPage() {
             height: "14px",
             borderRadius: "8px",
             appearance: "none",
-            backgroundColor: "#2a2f58"
+            backgroundColor: "#f5c84c"
           }}
         />
         <p style={{ fontSize: "12px", color: "#ccc" }}>
@@ -171,7 +171,7 @@ export default function MasaaAthkarPage() {
         )}
 
         <div className="button-wrapper">
-          <button onClick={handlePrev}>{current === 0 ? "الرجوع" : "السابق"}</button>
+          <button onClick={handlePrev} className="back-button">{current === 0 ? "الرجوع" : "السابق"}</button>
           {isLastThikr ? (
             <button onClick={handleSubmit} className="next-button">إرسال</button>
           ) : (

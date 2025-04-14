@@ -86,7 +86,7 @@ export default function SabahAthkarPage() {
     window.location.href = "/home";
   };
 
-  const circleRadius = 30;
+  const circleRadius = 40;
   const circumference = 2 * Math.PI * circleRadius;
   const percentage = thikr.count > 1 ? count / thikr.count : 1;
   const offset = circumference - percentage * circumference;
@@ -105,16 +105,9 @@ export default function SabahAthkarPage() {
 
       {/* Progress bar */}
       <div style={{ marginBottom: "12px" }}>
-        <progress
+        <progress className="athkar-progress"
           value={current + 1}
           max={sharedAthkar.length}
-          style={{
-            width: "100%",
-            height: "14px",
-            borderRadius: "8px",
-            appearance: "none",
-            backgroundColor: "#2a2f58"
-          }}
         />
         <p style={{ fontSize: "12px", color: "#ccc" }}>
           {current + 1} من {sharedAthkar.length}
@@ -171,7 +164,7 @@ export default function SabahAthkarPage() {
         )}
 
         <div className="button-wrapper">
-          <button onClick={handlePrev}>{current === 0 ? "الرجوع" : "السابق"}</button>
+          <button onClick={handlePrev} className="back-button">{current === 0 ? "الرجوع" : "السابق"}</button>
           {isLastThikr ? (
             <button onClick={handleSubmit} className="next-button">إرسال</button>
           ) : (
