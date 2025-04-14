@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
-import FancyRating from "../FancyRating"; 
+import FancyRating from "../FancyRating";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -47,12 +47,13 @@ export default function StudyPage() {
       back: "العودة للرئيسية"
     },
   };
+
   useEffect(() => {
     if ("Notification" in window && Notification.permission !== "granted") {
       Notification.requestPermission();
     }
   }, []);
-  
+
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
     if (saved.timeLeft && saved.startTime && saved.duration && saved.isRunning) {
@@ -67,22 +68,23 @@ export default function StudyPage() {
       }
     }
   }, []);
-  
+
   useEffect(() => {
     const tick = () => {
       const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
       if (!saved.startTime || !saved.duration || !saved.isRunning) return;
-  
+
       const now = Date.now();
       const elapsed = Math.floor((now - saved.startTime) / 1000);
       const remaining = saved.duration - elapsed;
-  
+
       if (remaining <= 0) {
         setTimeLeft(0);
         setIsRunning(false);
         setIsPaused(false);
         localStorage.removeItem("study_timer");
-  
+
+        // If notifications are allowed, send a notification
         if (Notification.permission === "granted") {
           new Notification("⏱ Time's up!", {
             body: "Great job staying focused! 🌟",
@@ -95,15 +97,13 @@ export default function StudyPage() {
         setTimeLeft(remaining);
       }
     };
-  
+
     if (isRunning && !isPaused) {
-      tick(); // check immediately
+      tick();
       const interval = setInterval(tick, 1000);
       return () => clearInterval(interval);
     }
   }, [isRunning, isPaused]);
-  
-  
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -126,7 +126,6 @@ export default function StudyPage() {
     setIsRunning(true);
     setIsPaused(false);
   };
-  
 
   const pauseCountdown = () => {
     setIsPaused(true);
@@ -134,7 +133,7 @@ export default function StudyPage() {
     saved.isPaused = true;
     localStorage.setItem("study_timer", JSON.stringify(saved));
   };
-  
+
   const resumeCountdown = () => {
     setIsPaused(false);
     const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
@@ -142,14 +141,13 @@ export default function StudyPage() {
     saved.startTime = Date.now() - (saved.duration - timeLeft) * 1000;
     localStorage.setItem("study_timer", JSON.stringify(saved));
   };
-  
+
   const stopCountdown = () => {
     setTimeLeft(0);
     setIsRunning(false);
     setIsPaused(false);
     localStorage.removeItem("study_timer");
   };
-  
 
   const handleSubmit = async () => {
     if (rating === 0 || subject.trim() === "") {
@@ -158,7 +156,6 @@ export default function StudyPage() {
         : "Please enter subject and choose a focus rating");
       return;
     }
-    
 
     const today = new Date().toISOString().split("T")[0];
     const taskName = "study";
@@ -207,7 +204,7 @@ export default function StudyPage() {
         <>
           <label>{t[language].chooseTime}</label>
           <select value={selectedMinutes} onChange={(e) => setSelectedMinutes(Number(e.target.value))}>
-            {[0.1,5, 10, 15, 20, 25, 30].map((min) => (
+            {[0.1, 5, 10, 15, 20, 25, 30].map((min) => (
               <option key={min} value={min}>{min}</option>
             ))}
           </select>

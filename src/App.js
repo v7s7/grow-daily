@@ -42,7 +42,8 @@ function App() {
   );
   
   return (
-    <>
+    
+    <div>
       <GlobalTimerWatcher />
       <Router>
         <Routes>
@@ -68,7 +69,7 @@ function App() {
           <Route path="/task/shower" element={user ? <ShowerTaskPage /> : <Navigate to="/auth" />} />
         </Routes>
       </Router>
-    </>
+      </div>
   );
 }
 
