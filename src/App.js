@@ -18,6 +18,7 @@ import AthkarPage from "./components/tasks/AthkarPage";
 import SabahAthkarPage from "./components/tasks/SabahAthkarPage";
 import MasaaAthkarPage from "./components/tasks/MasaaAthkarPage";
 import ShowerTaskPage from "./components/tasks/ShowerTaskPage";
+import GlobalTimerWatcher from "./components/GlobalTimerWatcher";
 
 import './App.css';
 
@@ -40,32 +41,34 @@ function App() {
     </div>
   );
   
-
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={user ? <Navigate to="/home" /> : <AuthPage />} />
-        <Route path="/auth" element={user ? <Navigate to="/home" /> : <AuthPage />} />
-
-        {/* Protected Routes */}
-        <Route path="/home" element={user ? <HomePage /> : <Navigate to="/auth" />} />
-        <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
-        <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
-        <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
-
-        <Route path="/task/quran" element={user ? <QuranPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/study" element={user ? <StudyPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/gym" element={user ? <GymPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/water" element={user ? <WaterPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/sleep" element={user ? <SleepPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/phone" element={user ? <PhoneUsePage /> : <Navigate to="/auth" />} />
-        <Route path="/task/athkar" element={user ? <AthkarPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/athkar/sabah" element={user ? <SabahAthkarPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/athkar/masaa" element={user ? <MasaaAthkarPage /> : <Navigate to="/auth" />} />
-        <Route path="/task/shower" element={user ? <ShowerTaskPage /> : <Navigate to="/auth" />} />
-      </Routes>
-    </Router>
+    <>
+      <GlobalTimerWatcher />
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={user ? <Navigate to="/home" /> : <AuthPage />} />
+          <Route path="/auth" element={user ? <Navigate to="/home" /> : <AuthPage />} />
+  
+          {/* Protected Routes */}
+          <Route path="/home" element={user ? <HomePage /> : <Navigate to="/auth" />} />
+          <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
+          <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
+          <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
+  
+          <Route path="/task/quran" element={user ? <QuranPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/study" element={user ? <StudyPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/gym" element={user ? <GymPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/water" element={user ? <WaterPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/sleep" element={user ? <SleepPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/phone" element={user ? <PhoneUsePage /> : <Navigate to="/auth" />} />
+          <Route path="/task/athkar" element={user ? <AthkarPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/athkar/sabah" element={user ? <SabahAthkarPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/athkar/masaa" element={user ? <MasaaAthkarPage /> : <Navigate to="/auth" />} />
+          <Route path="/task/shower" element={user ? <ShowerTaskPage /> : <Navigate to="/auth" />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

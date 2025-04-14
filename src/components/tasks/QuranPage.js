@@ -82,25 +82,19 @@ export default function QuranPage() {
         setIsPaused(false);
         localStorage.removeItem("quran_timer");
   
-        if (Notification.permission === "granted") {
-          new Notification("⏱ Time's up!", {
-            body: "Great job staying focused! 🌟",
-            icon: "/favicon.ico"
-          });
-        } else {
-          alert("⏱ Time's up! Great job staying focused! 🌟");
-        }
+        // Removed notification logic here (let GlobalTimerWatcher handle it)
       } else {
         setTimeLeft(remaining);
       }
     };
   
     if (isRunning && !isPaused) {
-      tick(); // check immediately
+      tick();
       const interval = setInterval(tick, 1000);
       return () => clearInterval(interval);
     }
   }, [isRunning, isPaused]);
+  
   
   
 
