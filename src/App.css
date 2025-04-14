@@ -545,18 +545,20 @@ button:disabled {
 
   .athkar-card {
     aspect-ratio: 1 / 1;
-    width: 100%;
-    height: auto;
+    width: 80%;
+    height: 80%;
     max-width: none;
     padding: 12px;
     border-radius: 12px;
+    margin-bottom: 10px;
+
   }
 
   .athkar-card img {
     width: 100%;
     max-height: 100px !important;
     object-fit: contain;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
   }
 }
 

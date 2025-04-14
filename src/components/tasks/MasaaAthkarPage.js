@@ -92,22 +92,53 @@ export default function MasaaAthkarPage() {
   const offset = circumference - percentage * circumference;
 
   return (
-    <div className="task-page-container" style={{ direction: "rtl", textAlign: "center" }}>
+    <div
+      className="task-page-container"
+      style={{ direction: "rtl", textAlign: "center" }}
+      onClick={(e) => {
+        if (e.target.tagName !== "BUTTON" && e.target.tagName !== "svg" && e.target.tagName !== "circle") {
+          handleCircleClick();
+        }
+      }}
+    >
       <h2 style={{ marginBottom: "20px" }}>أذكار المساء</h2>
+
+      {/* Progress bar */}
+      <div style={{ marginBottom: "12px" }}>
+        <progress
+          value={current + 1}
+          max={masaaAthkar.length}
+          style={{
+            width: "100%",
+            height: "14px",
+            borderRadius: "8px",
+            appearance: "none",
+            backgroundColor: "#2a2f58"
+          }}
+        />
+        <p style={{ fontSize: "12px", color: "#ccc" }}>
+          {current + 1} من {masaaAthkar.length}
+        </p>
+      </div>
 
       <div className="thikr-box">
         <div className="text-wrapper">
           <p className="thikr-text">{thikr.text}</p>
           {thikr.benefit && <p className="thikr-benefit">{thikr.benefit}</p>}
+          {thikr.count > 1 && (
+            <p style={{ fontSize: "14px", color: "#aaa", marginBottom: "16px" }}>
+              <strong>{thikr.count} {thikr.count === 100 ? "مرة" : "مرات"}</strong>
+            </p>
+          )}
         </div>
 
         {thikr.count > 1 && (
           <div className="progress-wrapper" onClick={handleCircleClick}>
-            <svg width="80" height="80">
+            <svg width="120" height="120">
               <circle
                 className="circle-bg"
-                cx="40"
-                cy="40"
+                cx="60"
+                cy="60"
                 r={circleRadius}
                 stroke="#2a2f58"
                 strokeWidth="6"
@@ -115,22 +146,22 @@ export default function MasaaAthkarPage() {
               />
               <circle
                 className="progress-circle"
-                cx="40"
-                cy="40"
+                cx="60"
+                cy="60"
                 r={circleRadius}
                 stroke="#f5c84c"
                 strokeWidth="6"
                 fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
-                transform="rotate(-90 40 40)"
+                transform="rotate(-90 60 60)"
               />
               <text
-                x="40"
-                y="45"
+                x="60"
+                y="65"
                 textAnchor="middle"
                 fill="#f5c84c"
-                fontSize="18"
+                fontSize="22"
                 fontWeight="bold"
               >
                 {count}
