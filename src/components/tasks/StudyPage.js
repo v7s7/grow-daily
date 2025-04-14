@@ -69,31 +69,40 @@ export default function StudyPage() {
   }, []);
   
   useEffect(() => {
-    let interval;
-    if (isRunning && !isPaused && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setIsRunning(false);
-            setIsPaused(false);
-            localStorage.removeItem("study_timer");
-            if (Notification.permission === "granted") {
-              new Notification("⏱ Time's up!", {
-                body: "Great job staying focused! 🌟",
-                icon: "/favicon.ico" // optional icon
-              });
-            } else {
-              alert("⏱ Time's up! Great job staying focused! 🌟");
-            }
-                        return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    const tick = () => {
+      const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
+      if (!saved.startTime || !saved.duration || !saved.isRunning) return;
+  
+      const now = Date.now();
+      const elapsed = Math.floor((now - saved.startTime) / 1000);
+      const remaining = saved.duration - elapsed;
+  
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        setIsRunning(false);
+        setIsPaused(false);
+        localStorage.removeItem("study_timer");
+  
+        if (Notification.permission === "granted") {
+          new Notification("⏱ Time's up!", {
+            body: "Great job staying focused! 🌟",
+            icon: "/favicon.ico"
+          });
+        } else {
+          alert("⏱ Time's up! Great job staying focused! 🌟");
+        }
+      } else {
+        setTimeLeft(remaining);
+      }
+    };
+  
+    if (isRunning && !isPaused) {
+      tick(); // check immediately
+      const interval = setInterval(tick, 1000);
+      return () => clearInterval(interval);
     }
-    return () => clearInterval(interval);
-  }, [isRunning, isPaused, timeLeft]);
+  }, [isRunning, isPaused]);
+  
   
 
   const formatTime = (seconds) => {
@@ -213,7 +222,7 @@ export default function StudyPage() {
               cx="60"
               cy="60"
               r="50"
-              stroke="f8cc6a"
+              stroke="#f8cc6a"
               strokeWidth="10"
               fill="none"
               strokeDasharray={314}

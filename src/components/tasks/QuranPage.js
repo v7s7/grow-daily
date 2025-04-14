@@ -67,33 +67,41 @@ export default function QuranPage() {
       }
     }
   }, []);
-  
   useEffect(() => {
-    let interval;
-    if (isRunning && !isPaused && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setIsRunning(false);
-            setIsPaused(false);
-            localStorage.removeItem("quran_timer");
-            if (Notification.permission === "granted") {
-              new Notification("⏱ Time's up!", {
-                body: "Great job staying focused! 🌟",
-                icon: "/favicon.ico" // optional icon
-              });
-            } else {
-              alert("⏱ Time's up! Great job staying focused! 🌟");
-            }
-                        return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    const tick = () => {
+      const saved = JSON.parse(localStorage.getItem("quran_timer") || "{}");
+      if (!saved.startTime || !saved.duration || !saved.isRunning) return;
+  
+      const now = Date.now();
+      const elapsed = Math.floor((now - saved.startTime) / 1000);
+      const remaining = saved.duration - elapsed;
+  
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        setIsRunning(false);
+        setIsPaused(false);
+        localStorage.removeItem("quran_timer");
+  
+        if (Notification.permission === "granted") {
+          new Notification("⏱ Time's up!", {
+            body: "Great job staying focused! 🌟",
+            icon: "/favicon.ico"
+          });
+        } else {
+          alert("⏱ Time's up! Great job staying focused! 🌟");
+        }
+      } else {
+        setTimeLeft(remaining);
+      }
+    };
+  
+    if (isRunning && !isPaused) {
+      tick(); // check immediately
+      const interval = setInterval(tick, 1000);
+      return () => clearInterval(interval);
     }
-    return () => clearInterval(interval);
-  }, [isRunning, isPaused, timeLeft]);
+  }, [isRunning, isPaused]);
+  
   
 
   const formatTime = (seconds) => {
