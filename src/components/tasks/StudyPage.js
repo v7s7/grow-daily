@@ -47,14 +47,54 @@ export default function StudyPage() {
       back: "العودة للرئيسية"
     },
   };
-
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
+  
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
+    if (saved.timeLeft && saved.startTime && saved.duration && saved.isRunning) {
+      const elapsed = Math.floor((Date.now() - saved.startTime) / 1000);
+      const remaining = saved.duration - elapsed;
+      if (remaining > 0) {
+        setTimeLeft(remaining);
+        setIsRunning(true);
+        setIsPaused(saved.isPaused || false);
+      } else {
+        localStorage.removeItem("study_timer");
+      }
+    }
+  }, []);
+  
   useEffect(() => {
     let interval;
     if (isRunning && !isPaused && timeLeft > 0) {
-      interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setIsRunning(false);
+            setIsPaused(false);
+            localStorage.removeItem("study_timer");
+            if (Notification.permission === "granted") {
+              new Notification("⏱ Time's up!", {
+                body: "Great job staying focused! 🌟",
+                icon: "/favicon.ico" // optional icon
+              });
+            } else {
+              alert("⏱ Time's up! Great job staying focused! 🌟");
+            }
+                        return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [isRunning, isPaused, timeLeft]);
+  
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -63,18 +103,44 @@ export default function StudyPage() {
   };
 
   const startCountdown = () => {
-    setTimeLeft(selectedMinutes * 60);
+    const duration = selectedMinutes * 60;
+    const startTime = Date.now();
+    const state = {
+      timeLeft: duration,
+      duration,
+      startTime,
+      isRunning: true,
+      isPaused: false,
+    };
+    localStorage.setItem("study_timer", JSON.stringify(state));
+    setTimeLeft(duration);
     setIsRunning(true);
     setIsPaused(false);
   };
+  
 
-  const pauseCountdown = () => setIsPaused(true);
-  const resumeCountdown = () => setIsPaused(false);
+  const pauseCountdown = () => {
+    setIsPaused(true);
+    const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
+    saved.isPaused = true;
+    localStorage.setItem("study_timer", JSON.stringify(saved));
+  };
+  
+  const resumeCountdown = () => {
+    setIsPaused(false);
+    const saved = JSON.parse(localStorage.getItem("study_timer") || "{}");
+    saved.isPaused = false;
+    saved.startTime = Date.now() - (saved.duration - timeLeft) * 1000;
+    localStorage.setItem("study_timer", JSON.stringify(saved));
+  };
+  
   const stopCountdown = () => {
     setTimeLeft(0);
     setIsRunning(false);
     setIsPaused(false);
+    localStorage.removeItem("study_timer");
   };
+  
 
   const handleSubmit = async () => {
     if (rating === 0 || subject.trim() === "") {
@@ -132,7 +198,7 @@ export default function StudyPage() {
         <>
           <label>{t[language].chooseTime}</label>
           <select value={selectedMinutes} onChange={(e) => setSelectedMinutes(Number(e.target.value))}>
-            {[5, 10, 15, 20, 25, 30].map((min) => (
+            {[0.1,5, 10, 15, 20, 25, 30].map((min) => (
               <option key={min} value={min}>{min}</option>
             ))}
           </select>
@@ -147,7 +213,7 @@ export default function StudyPage() {
               cx="60"
               cy="60"
               r="50"
-              stroke="green"
+              stroke="f8cc6a"
               strokeWidth="10"
               fill="none"
               strokeDasharray={314}
