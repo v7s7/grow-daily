@@ -11,7 +11,7 @@ export default function MasaaAthkarPage() {
   const [current, setCurrent] = useState(savedProgress.current || 0);
   const [count, setCount] = useState(savedProgress.count || 0);
   const navigate = useNavigate();
-
+const type = "masaa"
   const thikr = masaaAthkar[current];
   const isLastThikr = current === masaaAthkar.length - 1;
 
@@ -60,31 +60,44 @@ export default function MasaaAthkarPage() {
 
   const handleSubmit = async () => {
     const today = new Date().toISOString().split("T")[0];
-    const taskName = "masaa_athkar";
-
+    const taskName = type === "sabah" ? "sabah_athkar" : "masaa_athkar";
+    const rewardPoints = type === "sabah" ? 10 : 5;
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
+      localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
-    localStorage.removeItem("masaa_athkar_progress");
-
+  
     const user = auth.currentUser;
     if (user) {
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      const firestoreData = snap.exists() ? snap.data() : {};
-      const updated = {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
+      const firestoreData = snapshot.exists() ? snapshot.data() : {};
+  
+      const alreadySubmitted = firestoreData?.completedTasks?.[today]?.includes(taskName);
+      const updatedTasks = {
         ...(firestoreData.completedTasks || {}),
         [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
-      await setDoc(ref, { completedTasks: updated }, { merge: true });
+  
+      let pointsToAdd = 0;
+      if (!alreadySubmitted) {
+        pointsToAdd = rewardPoints;
+      }
+  
+      await setDoc(userRef, {
+        completedTasks: updatedTasks,
+        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd
+      }, { merge: true });
+  
+      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
     }
-
-    window.location.href = "/home";
+  
+    navigate("/home");
   };
+  
 
   const circleRadius = 40;
   const circumference = 2 * Math.PI * circleRadius;

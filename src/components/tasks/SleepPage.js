@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { taskPoints } from "../../utils/constants";
 
 export default function SleepPage() {
   const navigate = useNavigate();
@@ -60,12 +61,10 @@ export default function SleepPage() {
 
   const calculateRating = (hours) => {
     const h = Number(hours);
-  if ( h=== 0) return 0;
+    if (h === 0 || h === 24) return 0;
     if (h >= 7 && h <= 9) return 10;
     if (h < 7) return Math.max(0, 10 - (7 - h));
     if (h > 9) return Math.max(0, 10 - (h - 9));
-    if ( h=== 24) return 0;
-
     return 0;
   };
 
@@ -92,8 +91,8 @@ export default function SleepPage() {
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
+      localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
 
     const user = auth.currentUser;
     if (user) {
@@ -101,14 +100,59 @@ export default function SleepPage() {
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
 
+      const repeatKey = `${taskName}_repeat`;
+      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
+      const repeatCount = repeatCounts[repeatKey] || 0;
+
+      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
+      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
+
+      const basePoints = taskPoints[taskName] || 15;
+      let pointsToAdd = 0;
+
+      if (dailySubmissions < 5) {
+        if (repeatCount === 0) {
+          pointsToAdd = basePoints;
+        } else if (repeatCount === 1) {
+          pointsToAdd = Math.round(basePoints / 2);
+        }
+
+        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
+      }
+
       const updatedTasks = {
         ...(firestoreData.completedTasks || {}),
         [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
 
+      const updatedRepeats = {
+        ...(firestoreData.taskRepeats || {}),
+        [today]: {
+          ...repeatCounts,
+          [repeatKey]: repeatCount + 1
+        }
+      };
+
+      const updatedDailyPoints = {
+        ...(firestoreData.dailyPointsEarned || {}),
+        [today]: dailyPoints + pointsToAdd
+      };
+
+      const updatedDailySubs = {
+        ...(firestoreData.dailySubmissions || {}),
+        [today]: dailySubmissions + 1
+      };
+
       await setDoc(userRef, {
-        completedTasks: updatedTasks
+        completedTasks: updatedTasks,
+        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
+        taskRepeats: updatedRepeats,
+        dailyPointsEarned: updatedDailyPoints,
+        dailySubmissions: updatedDailySubs
       }, { merge: true });
+
+      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
     }
 
     navigate("/home");
@@ -154,11 +198,11 @@ export default function SleepPage() {
         <br />
 
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
-  <button onClick={handleSubmit}>{t[language].submit}</button>
-  <button onClick={() => navigate("/home")}>
-    {t[language]?.back || "Back to Home"}
-  </button>
-</div>
+          <button onClick={handleSubmit}>{t[language].submit}</button>
+          <button onClick={() => navigate("/home")}>
+            {t[language]?.back || "Back to Home"}
+          </button>
+        </div>
       </div>
 
       <NavBar />

@@ -22,7 +22,7 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const userId = user?.uid;
-
+  const [availablePoints, setAvailablePoints] = useState(Number(localStorage.getItem("availablePoints") || 0));
   const totalTasks = selectedTasks.length;
   const calculateCompletedCount = () => {
     return selectedTasks.reduce((count, task) => {
@@ -116,8 +116,13 @@ export default function HomePage() {
       const snap = await getDoc(ref);
       if (snap.exists()) {
         const data = snap.data();
+    
         setStreak(data.streak || 0);
         setCompletedTasks(data.completedTasks?.[today] || []);
+        
+        // ✅ ADD THESE 4 LINES BELOW
+        setAvailablePoints(data.availablePoints || 0);
+        localStorage.setItem("availablePoints", data.availablePoints || 0);
     
         if (data.plan && Array.isArray(data.plan)) {
           setSelectedTasks(data.plan);
@@ -129,6 +134,7 @@ export default function HomePage() {
       }
       setLoading(false);
     };
+    
     
 
     fetchData();
@@ -218,6 +224,11 @@ export default function HomePage() {
       <p style={{ color: streak === 0 ? "#f5c84c" : "#4CAF50", fontSize: "14px", marginTop: "4px" }}>
         🔥 Streak: {streak} — “{dailyQuote}”
       </p>
+      <p style={{ color: "#f5c84c", fontSize: "14px" }}>
+  Points: {availablePoints}
+</p>
+
+
 
       <div className="task-grid">
   {selectedTasks.map((task) => {

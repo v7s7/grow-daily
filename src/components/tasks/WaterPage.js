@@ -9,7 +9,6 @@ export default function WaterPage() {
   const navigate = useNavigate();
   const language = localStorage.getItem("lang") || "en";
   const today = new Date().toISOString().split("T")[0];
-
   const [waterIntake, setWaterIntake] = useState(0);
 
   const t = {
@@ -29,7 +28,6 @@ export default function WaterPage() {
     },
   };
 
-  // Load from localStorage
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("waterCups") || "{}");
     setWaterIntake(saved[today] || 0);
@@ -37,26 +35,9 @@ export default function WaterPage() {
 
   const updateStorage = async (newAmount) => {
     setWaterIntake(newAmount);
-
     const local = JSON.parse(localStorage.getItem("waterCups") || "{}");
     local[today] = newAmount;
     localStorage.setItem("waterCups", JSON.stringify(local));
-
-    const user = auth.currentUser;
-    if (user) {
-      const userRef = doc(db, "users", user.uid);
-      const snapshot = await getDoc(userRef);
-      const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
-      const updatedHydration = {
-        ...(firestoreData.hydration || {}),
-        [today]: newAmount,
-      };
-
-      await setDoc(userRef, {
-        hydration: updatedHydration,
-      }, { merge: true });
-    }
   };
 
   const handleCupSelect = async (index) => {
@@ -80,26 +61,36 @@ export default function WaterPage() {
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
 
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])],
-      };
+      const prevAmount = firestoreData.hydration?.[today] || 0;
+      const current = Math.min(prevAmount, 8);
+      const next = Math.min(waterIntake, 8);
+      let pointsToAdd = 0;
+
+      if (next > current) {
+        const rawPoints = (next - current) * 2;
+        const prevTotal = current * 2;
+        const newTotal = prevTotal + rawPoints;
+        const cappedTotal = Math.min(15, newTotal);
+        pointsToAdd = cappedTotal - prevTotal;
+      }
 
       const updatedHydration = {
         ...(firestoreData.hydration || {}),
         [today]: waterIntake,
       };
 
-      const waterScoreHistory = {
-        ...(firestoreData.waterSubmissions || {}),
-        [today]: [...((firestoreData.waterSubmissions?.[today]) || []), waterIntake],
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])],
       };
 
       await setDoc(userRef, {
         completedTasks: updatedTasks,
         hydration: updatedHydration,
-        waterSubmissions: waterScoreHistory,
+        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd
       }, { merge: true });
+
+      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
     }
 
     navigate("/home");
@@ -110,8 +101,6 @@ export default function WaterPage() {
       <h2>{t[language].title}</h2>
 
       <p>{t[language].waterIntake}</p>
-<p className="liter-indicator">
-</p>
 
       <div className="cups-container">
         {[...Array(8)].map((_, i) => (
@@ -124,17 +113,16 @@ export default function WaterPage() {
           />
         ))}
       </div>
+
       <p className="liter-indicator">
-  {language === "en"
-    ? `${(waterIntake / 4).toFixed(1)} L (4 cups = 1 liter)`
-    : `${(waterIntake / 4).toFixed(1)} لتر (كل ٤ أكواب = ١ لتر)`}
-</p>
+        {language === "en"
+          ? `${(waterIntake / 4).toFixed(1)} L (4 cups = 1 liter)`
+          : `${(waterIntake / 4).toFixed(1)} لتر (كل ٤ أكواب = ١ لتر)`}
+      </p>
 
       <p>{t[language].rating} {waterIntake} / 8 {language === "en" ? "cups" : "أكواب"} 💧</p>
 
-      <p className="quran-verse">
-        ﴾ وَجَعَلْنَا مِنَ الْمَاءِ كُلَّ شَيْءٍ حَيٍّ ﴿
-      </p>
+      <p className="quran-verse">﴾ وَجَعَلْنَا مِنَ الْمَاءِ كُلَّ شَيْءٍ حَيٍّ ﴿</p>
 
       <div className="water-buttons">
         <button onClick={handleSubmit}>{t[language].submit}</button>

@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { taskPoints } from "../../utils/constants";
 
 export default function PhoneUsePage() {
   const navigate = useNavigate();
   const language = localStorage.getItem("lang") || "en";
-
   const [phoneUseHours, setPhoneUseHours] = useState("0");
   const [rating, setRating] = useState(0);
   const [quote, setQuote] = useState("");
@@ -38,35 +38,31 @@ export default function PhoneUsePage() {
     "Time spent on your phone is time you can never get back.",
   ];
 
-  const getRandomQuote = () => {
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    return quotes[randomIndex];
-  };
+  const getRandomQuote = () => quotes[Math.floor(Math.random() * quotes.length)];
 
   const updateQuote = () => {
+    const today = new Date().toLocaleDateString();
     const lastQuoteDate = localStorage.getItem("lastQuoteDate");
-    const currentDate = new Date().toLocaleDateString();
 
-    if (lastQuoteDate !== currentDate) {
-      const randomQuote = getRandomQuote();
-      localStorage.setItem("quote", randomQuote);
-      localStorage.setItem("lastQuoteDate", currentDate);
-      setQuote(randomQuote);
+    if (lastQuoteDate !== today) {
+      const q = getRandomQuote();
+      localStorage.setItem("quote", q);
+      localStorage.setItem("lastQuoteDate", today);
+      setQuote(q);
     } else {
       setQuote(localStorage.getItem("quote"));
     }
   };
 
-  const calculateRating = (hours) => {
-    const h = Number(hours);
-    if (h < 0) return 0;
+  const calculateRating = (h) => {
+    h = Number(h);
     if (h <= 3) return 10;
     if (h === 4) return 9;
     if (h === 5 || h === 6) return 8;
     if (h === 7 || h === 8) return 7;
     if (h === 9) return 6;
     if (h === 10) return 4;
-    if (h >= 12 && h<=14) return 3;
+    if (h >= 12 && h <= 14) return 3;
     if (h > 15) return 2;
     return 2;
   };
@@ -75,6 +71,16 @@ export default function PhoneUsePage() {
     updateQuote();
     setRating(calculateRating(phoneUseHours));
   }, [phoneUseHours]);
+
+  const handleInputChange = (e) => {
+    const raw = e.target.value;
+    if (raw === "") {
+      setPhoneUseHours("");
+    } else {
+      const clamped = Math.max(0, Math.min(24, Number(raw)));
+      setPhoneUseHours(clamped.toString());
+    }
+  };
 
   const handleSubmit = async () => {
     const today = new Date().toISOString().split("T")[0];
@@ -93,27 +99,54 @@ export default function PhoneUsePage() {
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
 
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-      };
+      const repeatKey = `${taskName}_repeat`;
+      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
+      const repeatCount = repeatCounts[repeatKey] || 0;
+
+      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
+      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
+
+      const basePoints = taskPoints[taskName] || 15;
+      let pointsToAdd = 0;
+
+      if (dailySubmissions < 5) {
+        if (repeatCount === 0) {
+          pointsToAdd = basePoints;
+        } else if (repeatCount === 1) {
+          pointsToAdd = Math.round(basePoints / 2);
+        }
+
+        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
+      }
 
       await setDoc(userRef, {
-        completedTasks: updatedTasks
+        completedTasks: {
+          ...(firestoreData.completedTasks || {}),
+          [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
+        },
+        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
+        taskRepeats: {
+          ...(firestoreData.taskRepeats || {}),
+          [today]: {
+            ...repeatCounts,
+            [repeatKey]: repeatCount + 1
+          }
+        },
+        dailyPointsEarned: {
+          ...(firestoreData.dailyPointsEarned || {}),
+          [today]: dailyPoints + pointsToAdd
+        },
+        dailySubmissions: {
+          ...(firestoreData.dailySubmissions || {}),
+          [today]: dailySubmissions + 1
+        }
       }, { merge: true });
+
+      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
     }
 
     navigate("/home");
-  };
-
-  const handleInputChange = (e) => {
-    const raw = e.target.value;
-    if (raw === "") {
-      setPhoneUseHours(""); // allow empty temporarily
-    } else {
-      const clamped = Math.max(0, Math.min(24, Number(raw)));
-      setPhoneUseHours(clamped.toString());
-    }
   };
 
   return (
@@ -122,12 +155,7 @@ export default function PhoneUsePage() {
         <h2>{t[language].title}</h2>
 
         <label>{t[language].phoneUse}:</label>
-        <input
-          type="number"
-          value={phoneUseHours}
-          onChange={handleInputChange}
-          max="24"
-        />
+        <input type="number" value={phoneUseHours} onChange={handleInputChange} max="24" />
 
         <br />
 
@@ -155,13 +183,12 @@ export default function PhoneUsePage() {
         <br />
 
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
-  <button onClick={handleSubmit}>{t[language].submit}</button>
-  <button onClick={() => navigate("/home")}>
-    {t[language]?.back || "Back to Home"}
-  </button>
-</div>
+          <button onClick={handleSubmit}>{t[language].submit}</button>
+          <button onClick={() => navigate("/home")}>
+            {t[language]?.back || "Back to Home"}
+          </button>
+        </div>
       </div>
-
       <NavBar />
     </div>
   );

@@ -4,6 +4,7 @@ import NavBar from "../NavBar";
 import FancyRating from "../FancyRating";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { taskPoints } from "../../utils/constants";
 
 export default function StudyPage() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function StudyPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [subject, setSubject] = useState("");
   const [rating, setRating] = useState(0);
-  const [error, setError] = useState(""); // ✅ error message
+  const [error, setError] = useState("");
 
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
@@ -84,7 +85,6 @@ export default function StudyPage() {
         setIsPaused(false);
         localStorage.removeItem("study_timer");
 
-        // If notifications are allowed, send a notification
         if (Notification.permission === "granted") {
           new Notification("⏱ Time's up!", {
             body: "Great job staying focused! 🌟",
@@ -186,13 +186,61 @@ export default function StudyPage() {
         }
       };
 
+      // 🧠 POINT LOGIC
+      const repeatKey = `${taskName}_repeat`;
+      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
+      const repeatCount = repeatCounts[repeatKey] || 0;
+
+      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
+      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
+
+      const basePoints = taskPoints[taskName] || 15;
+      let pointsToAdd = 0;
+
+      if (dailySubmissions < 5) {
+        if (repeatCount === 0) {
+          pointsToAdd = basePoints;
+        } else if (repeatCount === 1) {
+          pointsToAdd = Math.round(basePoints / 2);
+        }
+
+        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
+      }
+
+      const newAvailable = (firestoreData.availablePoints || 0) + pointsToAdd;
+
+      const updatedRepeats = {
+        ...(firestoreData.taskRepeats || {}),
+        [today]: {
+          ...repeatCounts,
+          [repeatKey]: repeatCount + 1
+        }
+      };
+
+      const updatedDailyPoints = {
+        ...(firestoreData.dailyPointsEarned || {}),
+        [today]: dailyPoints + pointsToAdd
+      };
+
+      const updatedDailySubs = {
+        ...(firestoreData.dailySubmissions || {}),
+        [today]: dailySubmissions + 1
+      };
+
       await setDoc(userRef, {
         completedTasks: updatedTasks,
-        study: updatedStudy
+        study: updatedStudy,
+        availablePoints: newAvailable,
+        taskRepeats: updatedRepeats,
+        dailyPointsEarned: updatedDailyPoints,
+        dailySubmissions: updatedDailySubs
       }, { merge: true });
+
+      localStorage.setItem("availablePoints", newAvailable);
     }
 
-    setError(""); 
+    setError("");
     navigate("/home");
   };
 

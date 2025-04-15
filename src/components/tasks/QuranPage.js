@@ -4,6 +4,7 @@ import NavBar from "../NavBar";
 import FancyRating from "../FancyRating";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { taskPoints } from "../../utils/constants";
 
 export default function QuranPage() {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ export default function QuranPage() {
   const [error, setError] = useState("");
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
-  const user = auth.currentUser;
 
   const t = {
     en: {
@@ -83,7 +83,6 @@ export default function QuranPage() {
         setIsPaused(false);
         localStorage.removeItem("quran_timer");
 
-        // Send Notification
         if (Notification.permission === "granted") {
           new Notification("⏱ Time's up!", {
             body: "Great job staying focused! 🌟",
@@ -159,7 +158,6 @@ export default function QuranPage() {
     const today = new Date().toISOString().split("T")[0];
     const taskName = "quran";
 
-    // Save to local
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
@@ -167,7 +165,6 @@ export default function QuranPage() {
     }
     localStorage.setItem("completedTasks", JSON.stringify(completed));
 
-    // Save to Firestore
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
@@ -188,10 +185,59 @@ export default function QuranPage() {
         },
       };
 
+      // REPEAT COUNTER
+      const repeatKey = `${taskName}_repeat`;
+      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
+      const repeatCount = repeatCounts[repeatKey] || 0;
+
+      // DAILY SUBMISSION LIMIT
+      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
+      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
+
+      const basePoints = taskPoints[taskName];
+      let pointsToAdd = 0;
+
+      if (dailySubmissions < 5) {
+        if (repeatCount === 0) {
+          pointsToAdd = basePoints;
+        } else if (repeatCount === 1) {
+          pointsToAdd = Math.round(basePoints / 2);
+        }
+
+        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
+      }
+
+      const newAvailable = (firestoreData.availablePoints || 0) + pointsToAdd;
+
+      const updatedRepeats = {
+        ...(firestoreData.taskRepeats || {}),
+        [today]: {
+          ...repeatCounts,
+          [repeatKey]: repeatCount + 1
+        }
+      };
+
+      const updatedDailyPoints = {
+        ...(firestoreData.dailyPointsEarned || {}),
+        [today]: dailyPoints + pointsToAdd
+      };
+
+      const updatedDailySubs = {
+        ...(firestoreData.dailySubmissions || {}),
+        [today]: dailySubmissions + 1
+      };
+
       await setDoc(userRef, {
         completedTasks: updatedTasks,
-        quran: updatedQuran
+        quran: updatedQuran,
+        availablePoints: newAvailable,
+        taskRepeats: updatedRepeats,
+        dailyPointsEarned: updatedDailyPoints,
+        dailySubmissions: updatedDailySubs
       }, { merge: true });
+
+      localStorage.setItem("availablePoints", newAvailable);
     }
 
     setError("");
