@@ -9,6 +9,7 @@ export default function WaterPage() {
   const navigate = useNavigate();
   const language = localStorage.getItem("lang") || "en";
   const today = new Date().toISOString().split("T")[0];
+
   const [waterIntake, setWaterIntake] = useState(0);
 
   const t = {
@@ -61,33 +62,29 @@ export default function WaterPage() {
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
 
-      const prevAmount = firestoreData.hydration?.[today] || 0;
-      const current = Math.min(prevAmount, 8);
-      const next = Math.min(waterIntake, 8);
-      let pointsToAdd = 0;
-
-      if (next > current) {
-        const rawPoints = (next - current) * 2;
-        const prevTotal = current * 2;
-        const newTotal = prevTotal + rawPoints;
-        const cappedTotal = Math.min(15, newTotal);
-        pointsToAdd = cappedTotal - prevTotal;
-      }
+      const updatedTasks = {
+        ...(firestoreData.completedTasks || {}),
+        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
+      };
 
       const updatedHydration = {
         ...(firestoreData.hydration || {}),
         [today]: waterIntake,
       };
 
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])],
-      };
+      const previousPoints = firestoreData.waterPoints?.[today] || 0;
+      const capped = Math.min(waterIntake, 8);
+      const basePoints = capped + (capped === 8 ? 2 : 0); // 1 per cup, +2 bonus if 8
+      const pointsToAdd = Math.max(0, basePoints - previousPoints);
 
       await setDoc(userRef, {
         completedTasks: updatedTasks,
         hydration: updatedHydration,
-        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd
+        waterPoints: {
+          ...(firestoreData.waterPoints || {}),
+          [today]: Math.max(previousPoints, basePoints),
+        },
+        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
       }, { merge: true });
 
       localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
