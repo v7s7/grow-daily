@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
 export default function NavBar({ language = "en" }) {
   const navigate = useNavigate();
@@ -43,6 +44,9 @@ export default function NavBar({ language = "en" }) {
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
         <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
+<span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
+  {language === "ar" ? "التحكم بالمهام" : "Task Control"}
+</span>
         <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
       </div>
 

@@ -19,6 +19,7 @@ import MasaaAthkarPage from "./components/tasks/MasaaAthkarPage";
 import ShowerTaskPage from "./components/tasks/ShowerTaskPage";
 import GlobalTimerWatcher from "./components/GlobalTimerWatcher";
 import ToDoList from "./components/ToDoList"; 
+import EisenhowerToDo from "./components/EisenhowerToDo";
 
 import './App.css';
 
@@ -57,6 +58,7 @@ function App() {
           <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
           <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
           <Route path="/todolist" element={user ? <ToDoList /> : <Navigate to="/auth" />} />
+          <Route path="/eisenhower" element={user ? <EisenhowerToDo /> : <Navigate to="/auth" />} />
           <Route path="/task/quran" element={user ? <QuranPage /> : <Navigate to="/auth" />} />
           <Route path="/task/study" element={user ? <StudyPage /> : <Navigate to="/auth" />} />
           <Route path="/task/gym" element={user ? <GymPage /> : <Navigate to="/auth" />} />
