@@ -6,8 +6,20 @@ export default function NavBar({ language = "en" }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const t = {
-    en: { home: "Home", aquarium: "Aquarium", settings: "Settings", title: "GrowDaily" },
-    ar: { home: "الرئيسية", aquarium: "الحوض", settings: "الإعدادات", title: "GrowDaily" },
+    en: {
+      home: "Home",
+      aquarium: "Aquarium",
+      settings: "Settings",
+      todo: "To-Do List",
+      title: "GrowDaily",
+    },
+    ar: {
+      home: "الرئيسية",
+      aquarium: "الحوض",
+      settings: "الإعدادات",
+      todo: "قائمة المهام",
+      title: "GrowDaily",
+    },
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -30,6 +42,7 @@ export default function NavBar({ language = "en" }) {
         <div className="close-btn" onClick={closeMenu}>×</div>
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
         <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
+        <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
         <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
       </div>
 

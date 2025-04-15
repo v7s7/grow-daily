@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig";
-import { taskPoints } from "./utils/constants"; 
-
 import AuthPage from "./components/AuthPage";
 import HomePage from "./components/HomePage";
 import SettingsPage from "./components/SettingsPage";
@@ -20,6 +18,7 @@ import SabahAthkarPage from "./components/tasks/SabahAthkarPage";
 import MasaaAthkarPage from "./components/tasks/MasaaAthkarPage";
 import ShowerTaskPage from "./components/tasks/ShowerTaskPage";
 import GlobalTimerWatcher from "./components/GlobalTimerWatcher";
+import ToDoList from "./components/ToDoList"; 
 
 import './App.css';
 
@@ -57,7 +56,7 @@ function App() {
           <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
           <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
           <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
-  
+          <Route path="/todolist" element={user ? <ToDoList /> : <Navigate to="/auth" />} />
           <Route path="/task/quran" element={user ? <QuranPage /> : <Navigate to="/auth" />} />
           <Route path="/task/study" element={user ? <StudyPage /> : <Navigate to="/auth" />} />
           <Route path="/task/gym" element={user ? <GymPage /> : <Navigate to="/auth" />} />
