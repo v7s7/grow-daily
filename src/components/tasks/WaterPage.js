@@ -4,6 +4,7 @@ import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "../../styles/WaterPage.css";
+import { updatePoints } from "../../utils/updatePoints";
 
 export default function WaterPage() {
   const navigate = useNavigate();
@@ -48,50 +49,53 @@ export default function WaterPage() {
 
   const handleSubmit = async () => {
     const taskName = "water";
-
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
       localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-
+  
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
+  
       const updatedTasks = {
         ...(firestoreData.completedTasks || {}),
         [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
       };
-
+  
       const updatedHydration = {
         ...(firestoreData.hydration || {}),
         [today]: waterIntake,
       };
-
+  
+      // 🧠 Point logic
       const previousPoints = firestoreData.waterPoints?.[today] || 0;
       const capped = Math.min(waterIntake, 8);
-      const basePoints = capped + (capped === 8 ? 2 : 0); // 1 per cup, +2 bonus if 8
-      const pointsToAdd = Math.max(0, basePoints - previousPoints);
-
+      const basePoints = capped + (capped === 8 ? 2 : 0); // max = 10
+      const newPoints = Math.min(basePoints, 10);
+      const pointsToAdd = Math.max(0, newPoints - previousPoints);
+  
       await setDoc(userRef, {
         completedTasks: updatedTasks,
         hydration: updatedHydration,
         waterPoints: {
           ...(firestoreData.waterPoints || {}),
-          [today]: Math.max(previousPoints, basePoints),
+          [today]: Math.max(previousPoints, newPoints),
         },
         availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
       }, { merge: true });
-
+  
       localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
     }
-
+  
     navigate("/home");
   };
+  
 
   return (
     <div className="task-page-container">

@@ -4,6 +4,7 @@ import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
+import { updatePoints } from "../../utils/updatePoints";
 
 export default function SleepPage() {
   const navigate = useNavigate();
@@ -86,77 +87,47 @@ export default function SleepPage() {
   const handleSubmit = async () => {
     const today = new Date().toISOString().split("T")[0];
     const taskName = "sleep";
-
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
       localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-
+  
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
-      const repeatKey = `${taskName}_repeat`;
-      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
-      const repeatCount = repeatCounts[repeatKey] || 0;
-
-      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
-      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
-
-      const basePoints = taskPoints[taskName] || 15;
-      let pointsToAdd = 0;
-
-      if (dailySubmissions < 5) {
-        if (repeatCount === 0) {
-          pointsToAdd = basePoints;
-        } else if (repeatCount === 1) {
-          pointsToAdd = Math.round(basePoints / 2);
-        }
-
-        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
-        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
-      }
-
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-      };
-
-      const updatedRepeats = {
-        ...(firestoreData.taskRepeats || {}),
-        [today]: {
-          ...repeatCounts,
-          [repeatKey]: repeatCount + 1
-        }
-      };
-
-      const updatedDailyPoints = {
-        ...(firestoreData.dailyPointsEarned || {}),
-        [today]: dailyPoints + pointsToAdd
-      };
-
-      const updatedDailySubs = {
-        ...(firestoreData.dailySubmissions || {}),
-        [today]: dailySubmissions + 1
-      };
-
+  
+      const alreadySubmitted = firestoreData?.completedTasks?.[today]?.includes(taskName);
+      const rawPoints = alreadySubmitted ? 0 : rating;
+  
+      // Save sleepPoints
       await setDoc(userRef, {
-        completedTasks: updatedTasks,
-        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
-        taskRepeats: updatedRepeats,
-        dailyPointsEarned: updatedDailyPoints,
-        dailySubmissions: updatedDailySubs
+        sleepPoints: {
+          ...(firestoreData.sleepPoints || {}),
+          [today]: rating
+        }
       }, { merge: true });
-
-      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
+  
+      await updatePoints({
+        db,
+        userId: user.uid,
+        firestoreData,
+        taskName,
+        today,
+        rawPoints,
+        maxPerTask: 10
+      });
     }
-
+  
     navigate("/home");
   };
+  
+  
+  
 
   return (
     <div className="task-page-container">

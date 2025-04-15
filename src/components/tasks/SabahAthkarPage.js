@@ -5,6 +5,7 @@ import { sharedAthkar } from "../../data/sharedAthkar";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { updatePoints } from "../../utils/updatePoints";
 
 export default function SabahAthkarPage() {
   const savedProgress = JSON.parse(localStorage.getItem("sabah_athkar_progress") || "{}");
@@ -60,15 +61,10 @@ const type = "sabah"
 
   const handleSubmit = async () => {
     const today = new Date().toISOString().split("T")[0];
-    const taskName = type === "sabah" ? "sabah_athkar" : "masaa_athkar";
-    const rewardPoints = type === "sabah" ? 10 : 5;
+    const taskName = "sabah_athkar";
   
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
-    if (!completed[today].includes(taskName)) {
-      completed[today].push(taskName);
-      localStorage.setItem("completedTasks", JSON.stringify(completed));
-    }
   
     const user = auth.currentUser;
     if (user) {
@@ -77,26 +73,41 @@ const type = "sabah"
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
   
       const alreadySubmitted = firestoreData?.completedTasks?.[today]?.includes(taskName);
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-      };
-  
-      let pointsToAdd = 0;
-      if (!alreadySubmitted) {
-        pointsToAdd = rewardPoints;
-      }
+      const rawPoints = alreadySubmitted ? 0 : 10;
+      const previousPoints = firestoreData[`${taskName}Points`]?.[today] || 0;
   
       await setDoc(userRef, {
-        completedTasks: updatedTasks,
-        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd
+        sabah_athkar: {
+          ...(firestoreData.sabah_athkar || {}),
+          [today]: true
+        }
       }, { merge: true });
   
-      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
+      await updatePoints({
+        db,
+        userId: user.uid,
+        firestoreData,
+        taskName,
+        today,
+        rawPoints,
+        previousPoints, // ✅ This fixes the issue
+        maxPerTask: 10
+      });
+    }
+  
+    if (!completed[today].includes(taskName)) {
+      completed[today].push(taskName);
+      localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
   
     navigate("/home");
   };
+  
+  
+  
+  
+  
+  
   
   const circleRadius = 40;
   const circumference = 2 * Math.PI * circleRadius;

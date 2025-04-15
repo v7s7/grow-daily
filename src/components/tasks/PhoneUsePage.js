@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { taskPoints } from "../../utils/constants";
+import { doc, getDoc } from "firebase/firestore";
+import { updatePoints } from "../../utils/updatePoints"; // ✅ new import
 
 export default function PhoneUsePage() {
   const navigate = useNavigate();
@@ -43,7 +43,6 @@ export default function PhoneUsePage() {
   const updateQuote = () => {
     const today = new Date().toLocaleDateString();
     const lastQuoteDate = localStorage.getItem("lastQuoteDate");
-
     if (lastQuoteDate !== today) {
       const q = getRandomQuote();
       localStorage.setItem("quote", q);
@@ -62,7 +61,7 @@ export default function PhoneUsePage() {
     if (h === 7 || h === 8) return 7;
     if (h === 9) return 6;
     if (h === 10) return 4;
-    if (h >= 12 && h <= 14) return 3;
+    if (h >= 11 && h <= 14) return 3;
     if (h > 15) return 2;
     return 2;
   };
@@ -85,69 +84,40 @@ export default function PhoneUsePage() {
   const handleSubmit = async () => {
     const today = new Date().toISOString().split("T")[0];
     const taskName = "phone";
-
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
-    if (!completed[today].includes(taskName)) {
-      completed[today].push(taskName);
-    }
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
-
+  
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
-      const repeatKey = `${taskName}_repeat`;
-      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
-      const repeatCount = repeatCounts[repeatKey] || 0;
-
-      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
-      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
-
-      const basePoints = taskPoints[taskName] || 15;
-      let pointsToAdd = 0;
-
-      if (dailySubmissions < 5) {
-        if (repeatCount === 0) {
-          pointsToAdd = basePoints;
-        } else if (repeatCount === 1) {
-          pointsToAdd = Math.round(basePoints / 2);
-        }
-
-        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
-        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
+  
+      const alreadySubmitted = firestoreData?.completedTasks?.[today]?.includes(taskName);
+      
+      const rawPoints = alreadySubmitted ? 0 : rating; // ✅ reward only once
+  
+      // 🧠 update Firestore and localStorage even if no reward, for record keeping
+      await updatePoints({
+        db,
+        userId: user.uid,
+        firestoreData,
+        taskName,
+        today,
+        rawPoints,
+        maxPerTask: 10
+      });
+  
+      if (!completed[today].includes(taskName)) {
+        completed[today].push(taskName);
+        localStorage.setItem("completedTasks", JSON.stringify(completed));
       }
-
-      await setDoc(userRef, {
-        completedTasks: {
-          ...(firestoreData.completedTasks || {}),
-          [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-        },
-        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
-        taskRepeats: {
-          ...(firestoreData.taskRepeats || {}),
-          [today]: {
-            ...repeatCounts,
-            [repeatKey]: repeatCount + 1
-          }
-        },
-        dailyPointsEarned: {
-          ...(firestoreData.dailyPointsEarned || {}),
-          [today]: dailyPoints + pointsToAdd
-        },
-        dailySubmissions: {
-          ...(firestoreData.dailySubmissions || {}),
-          [today]: dailySubmissions + 1
-        }
-      }, { merge: true });
-
-      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
+  
+      navigate("/home");
     }
-
-    navigate("/home");
   };
+  
 
   return (
     <div className="task-page-container">
@@ -156,8 +126,6 @@ export default function PhoneUsePage() {
 
         <label>{t[language].phoneUse}:</label>
         <input type="number" value={phoneUseHours} onChange={handleInputChange} max="24" />
-
-        <br />
 
         <h4>{t[language].rating}:</h4>
         <p style={{ fontSize: "24px", color: "#f5c84c", textAlign: "center", fontWeight: "bold" }}>
@@ -176,11 +144,7 @@ export default function PhoneUsePage() {
               : "Too much screen time today 😓"}
         </p>
 
-        <br />
-
         <p style={{ fontSize: "12px", color: "#f5c84c", textAlign: "center", fontWeight: "bold" }}>{quote}</p>
-
-        <br />
 
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
           <button onClick={handleSubmit}>{t[language].submit}</button>

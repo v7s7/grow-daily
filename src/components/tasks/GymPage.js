@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import FancyRating from "../FancyRating";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
+import { updatePoints } from "../../utils/updatePoints"; 
 import "../../styles/GymPage.css";
 
 export default function GymPage() {
@@ -55,84 +56,75 @@ export default function GymPage() {
         : "Please select at least one workout and rate your session");
       return;
     }
-
+  
     const today = new Date().toISOString().split("T")[0];
     const taskName = "gym";
-
+  
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
+      localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
-
+  
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-      };
-
-      const updatedGym = {
-        ...(firestoreData.gym || {}),
-        [today]: {
-          selected: Object.keys(workouts).filter((w) => workouts[w]),
-          rating,
-        }
-      };
-
-      // Reward logic
+  
       const repeatKey = `${taskName}_repeat`;
-      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
-      const repeatCount = repeatCounts[repeatKey] || 0;
-      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
-      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
-
+      const repeatCount = firestoreData.taskRepeats?.[today]?.[repeatKey] || 0;
+      const previousPoints = firestoreData.gymPoints?.[today] || 0;
+      const maxPerTask = 15;
       const basePoints = taskPoints[taskName] || 15;
-      let pointsToAdd = 0;
-
-      if (dailySubmissions < 5) {
-        if (repeatCount === 0) {
-          pointsToAdd = basePoints;
-        } else if (repeatCount === 1) {
-          pointsToAdd = Math.round(basePoints / 2);
-        }
-
-        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
-        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
-      }
-
+  
+      // Save workout info
       await setDoc(userRef, {
-        completedTasks: updatedTasks,
-        gym: updatedGym,
-        availablePoints: (firestoreData.availablePoints || 0) + pointsToAdd,
+        gym: {
+          ...(firestoreData.gym || {}),
+          [today]: {
+            selected: Object.keys(workouts).filter((w) => workouts[w]),
+            rating,
+          }
+        },
         taskRepeats: {
           ...(firestoreData.taskRepeats || {}),
           [today]: {
-            ...repeatCounts,
+            ...(firestoreData.taskRepeats?.[today] || {}),
             [repeatKey]: repeatCount + 1
           }
-        },
-        dailyPointsEarned: {
-          ...(firestoreData.dailyPointsEarned || {}),
-          [today]: dailyPoints + pointsToAdd
-        },
-        dailySubmissions: {
-          ...(firestoreData.dailySubmissions || {}),
-          [today]: dailySubmissions + 1
         }
       }, { merge: true });
-
-      localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
+  
+      // 🎯 Calculate rawPoints correctly
+      let rawPoints = 0;
+      if (repeatCount === 0) {
+        rawPoints = basePoints;
+      } else if (repeatCount === 1) {
+        rawPoints = Math.round(basePoints / 2);
+      }
+  
+      const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+      rawPoints = Math.round(rawPoints * ratingBoost);
+  
+      await updatePoints({
+        db,
+        userId: user.uid,
+        firestoreData,
+        taskName,
+        today,
+        rawPoints,
+        previousPoints,
+        maxPerTask,
+        repeatCount
+      });
     }
-
+  
     setError("");
     navigate("/home");
   };
+  
 
   return (
     <div className="task-page-container">

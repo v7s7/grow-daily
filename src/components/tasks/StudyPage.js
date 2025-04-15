@@ -5,6 +5,7 @@ import FancyRating from "../FancyRating";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
+import { updatePoints } from "../../utils/updatePoints";
 
 export default function StudyPage() {
   const navigate = useNavigate();
@@ -164,8 +165,8 @@ export default function StudyPage() {
     completed[today] = completed[today] || [];
     if (!completed[today].includes(taskName)) {
       completed[today].push(taskName);
+      localStorage.setItem("completedTasks", JSON.stringify(completed));
     }
-    localStorage.setItem("completedTasks", JSON.stringify(completed));
 
     const user = auth.currentUser;
     if (user) {
@@ -173,71 +174,51 @@ export default function StudyPage() {
       const snapshot = await getDoc(userRef);
       const firestoreData = snapshot.exists() ? snapshot.data() : {};
 
-      const updatedTasks = {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])]
-      };
-
-      const updatedStudy = {
-        ...(firestoreData.study || {}),
-        [today]: {
-          subject: subject.trim(),
-          rating
-        }
-      };
-
-      // 🧠 POINT LOGIC
       const repeatKey = `${taskName}_repeat`;
-      const repeatCounts = firestoreData.taskRepeats?.[today] || {};
-      const repeatCount = repeatCounts[repeatKey] || 0;
-
-      const dailySubmissions = firestoreData.dailySubmissions?.[today] || 0;
-      const dailyPoints = firestoreData.dailyPointsEarned?.[today] || 0;
-
+      const repeatCount = firestoreData.taskRepeats?.[today]?.[repeatKey] || 0;
+      const previousPoints = firestoreData.studyPoints?.[today] || 0;
       const basePoints = taskPoints[taskName] || 15;
-      let pointsToAdd = 0;
+      const maxPerTask = 15;
 
-      if (dailySubmissions < 5) {
-        if (repeatCount === 0) {
-          pointsToAdd = basePoints;
-        } else if (repeatCount === 1) {
-          pointsToAdd = Math.round(basePoints / 2);
-        }
-
-        const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
-        pointsToAdd = Math.round(pointsToAdd * ratingBoost);
-      }
-
-      const newAvailable = (firestoreData.availablePoints || 0) + pointsToAdd;
-
-      const updatedRepeats = {
-        ...(firestoreData.taskRepeats || {}),
-        [today]: {
-          ...repeatCounts,
-          [repeatKey]: repeatCount + 1
-        }
-      };
-
-      const updatedDailyPoints = {
-        ...(firestoreData.dailyPointsEarned || {}),
-        [today]: dailyPoints + pointsToAdd
-      };
-
-      const updatedDailySubs = {
-        ...(firestoreData.dailySubmissions || {}),
-        [today]: dailySubmissions + 1
-      };
-
+      // Save subject & rating
       await setDoc(userRef, {
-        completedTasks: updatedTasks,
-        study: updatedStudy,
-        availablePoints: newAvailable,
-        taskRepeats: updatedRepeats,
-        dailyPointsEarned: updatedDailyPoints,
-        dailySubmissions: updatedDailySubs
+        study: {
+          ...(firestoreData.study || {}),
+          [today]: {
+            subject: subject.trim(),
+            rating,
+          }
+        },
+        taskRepeats: {
+          ...(firestoreData.taskRepeats || {}),
+          [today]: {
+            ...(firestoreData.taskRepeats?.[today] || {}),
+            [repeatKey]: repeatCount + 1
+          }
+        }
       }, { merge: true });
 
-      localStorage.setItem("availablePoints", newAvailable);
+      let rawPoints = 0;
+      if (repeatCount === 0) {
+        rawPoints = basePoints;
+      } else if (repeatCount === 1) {
+        rawPoints = Math.round(basePoints / 2);
+      }
+
+      const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+      rawPoints = Math.round(rawPoints * ratingBoost);
+
+      await updatePoints({
+        db,
+        userId: user.uid,
+        firestoreData,
+        taskName,
+        today,
+        rawPoints,
+        previousPoints,
+        maxPerTask,
+        repeatCount
+      });
     }
 
     setError("");
