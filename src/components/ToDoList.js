@@ -35,7 +35,6 @@ const Checkbox = () => {
     fetchTasks();
   }, [user]);
 
-  // Save tasks to Firestore + localStorage
   const saveTasks = async (updatedTasks) => {
     if (!user) return;
     setTasks(updatedTasks);
@@ -43,6 +42,7 @@ const Checkbox = () => {
     const ref = doc(db, 'users', user.uid);
     await setDoc(ref, { todoTasks: updatedTasks }, { merge: true });
   };
+  
 
   const handleAddTask = () => {
     if (newTask.trim() === '') return;
@@ -65,9 +65,8 @@ const Checkbox = () => {
       task.id === id ? { ...task, checked: !task.checked } : task
     );
   
-    setTasks(updated);
-    localStorage.setItem('todoTasks', JSON.stringify(updated));
-    const ref = doc(db, 'users', user.uid);
+    saveTasks(updated); // ✅ ensures everything is synced
+
 
   };
   

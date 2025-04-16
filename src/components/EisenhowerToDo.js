@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import styled from "styled-components";
 import NavBar from "./NavBar";
 
-const categoryColors = {
+const defaultColors = {
   urgentImportant: "#7ed957",
   importantNotUrgent: "#0cc0df",
   urgentNotImportant: "#ffde59",
@@ -24,6 +24,7 @@ const labels = {
     delete: "Delete",
     toggleEdit: "Edit Mode",
     viewMode: "View Mode",
+    reset: "Reset All",
   },
   ar: {
     urgentImportant: "عاجل ومهم",
@@ -37,12 +38,14 @@ const labels = {
     delete: "حذف",
     toggleEdit: "وضع التعديل",
     viewMode: "وضع العرض",
+    reset: "حذف الكل",
   },
 };
 
 export default function EisenhowerToDo() {
   const user = auth.currentUser;
   const [tasks, setTasks] = useState({});
+  const [colors, setColors] = useState(defaultColors);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("urgentImportant");
   const [editing, setEditing] = useState(null);
@@ -54,21 +57,29 @@ export default function EisenhowerToDo() {
 
   useEffect(() => {
     if (!user) return;
-    const loadTasks = async () => {
+    const load = async () => {
       const ref = doc(db, "users", user.uid);
       const snap = await getDoc(ref);
       if (snap.exists()) {
-        const data = snap.data().eisenhowerTasks || {};
-        setTasks(data);
+        const data = snap.data();
+        setTasks(data.eisenhowerTasks || {});
+        setColors(data.eisenhowerColors || defaultColors);
       }
     };
-    loadTasks();
+    load();
   }, [user]);
 
-  const saveToFirestore = async (updatedTasks) => {
+  const saveToFirestore = async (updatedTasks, updatedColors = colors) => {
     if (!user) return;
     const ref = doc(db, "users", user.uid);
-    await setDoc(ref, { eisenhowerTasks: updatedTasks }, { merge: true });
+    await setDoc(
+      ref,
+      {
+        eisenhowerTasks: updatedTasks,
+        eisenhowerColors: updatedColors,
+      },
+      { merge: true }
+    );
   };
 
   const handleAdd = () => {
@@ -117,9 +128,23 @@ export default function EisenhowerToDo() {
     setEditing(null);
   };
 
+  const handleColorChange = (cat, newColor) => {
+    const updated = { ...colors, [cat]: newColor };
+    setColors(updated);
+    saveToFirestore(tasks, updated);
+  };
+
+  const handleResetAllTasks = () => {
+    if (!window.confirm("Are you sure you want to delete all tasks?")) return;
+    const cleared = {};
+    Object.keys(defaultColors).forEach((cat) => (cleared[cat] = []));
+    setTasks(cleared);
+    saveToFirestore(cleared);
+  };
+
   return (
     <Container>
-<Title>{language === "ar" ? "التحكم بالمهام" : "Mission Control"}</Title>
+      <Title>{language === "ar" ? "التحكم بالمهام" : "Mission Control"}</Title>
 
       <div className="add-task">
         <Input
@@ -127,12 +152,13 @@ export default function EisenhowerToDo() {
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           placeholder={t.placeholder}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
         />
         <Select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-{["urgentImportant", "importantNotUrgent", "urgentNotImportant", "notUrgentNotImportant"].map((key) => (
+          {Object.keys(defaultColors).map((key) => (
             <option key={key} value={key}>
               {t[key]}
             </option>
@@ -142,30 +168,58 @@ export default function EisenhowerToDo() {
         <Button onClick={() => setEditMode(!editMode)}>
           {editMode ? t.viewMode : t.toggleEdit}
         </Button>
+        {editMode && <Button onClick={handleResetAllTasks}>{t.reset}</Button>}
       </div>
 
-      {Object.keys(categoryColors).map((catKey) => (
-        <CategoryBox key={catKey} color={categoryColors[catKey]}>
+      {Object.keys(defaultColors).map((catKey) => (
+        <CategoryBox key={catKey} color={colors[catKey]}>
           <h3>{t[catKey]}</h3>
+          {editMode && (
+  <label
+  style={{
+    cursor: "pointer",
+    display: "inline-block",
+    marginBottom: "10px",
+    fontSize: "20px",
+    marginLeft: "10px" // ← this acts like a tab
+  }}
+>
+  🎨
+  <input
+    type="color"
+    value={colors[catKey]}
+    onChange={(e) => handleColorChange(catKey, e.target.value)}
+    style={{ display: "none" }}
+  />
+</label>
+
+
+)}
+
+
           <TaskList>
-            {(tasks[catKey] || []).map((task) => (
+          {(tasks[catKey] || [])
+  .slice()
+  .sort((a, b) => a.done - b.done)
+  .map((task) => (
               <TaskItem key={task.id} done={task.done}>
                 {editing === task.id ? (
                   <Input
                     value={task.text}
-                    onChange={(e) => handleEdit(catKey, task.id, e.target.value)}
+                    onChange={(e) =>
+                      handleEdit(catKey, task.id, e.target.value)
+                    }
                     onBlur={() => setEditing(null)}
                     autoFocus
                   />
                 ) : (
-<TaskText
-  done={task.done}
-  color={categoryColors[catKey]} 
-  onClick={() => toggleDone(catKey, task.id)}
->
-  {task.text}
-</TaskText>
-
+                  <TaskText
+                    done={task.done}
+                    color={colors[catKey]}
+                    onClick={() => toggleDone(catKey, task.id)}
+                  >
+                    {task.text}
+                  </TaskText>
                 )}
                 {editMode && (
                   <>
@@ -181,12 +235,12 @@ export default function EisenhowerToDo() {
             ))}
           </TaskList>
         </CategoryBox>
-      ))}    <NavBar />
+      ))}
 
+      <NavBar />
     </Container>
   );
 }
-
 
 const Container = styled.div`
   font-family: 'Cairo', 'Inter', sans-serif;    

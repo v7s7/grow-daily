@@ -8,9 +8,41 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { updatePoints } from "../../utils/updatePoints"; // ✅ new import
 
 export default function MasaaAthkarPage() {
-  const savedProgress = JSON.parse(localStorage.getItem("masaa_athkar_progress") || "{}");
-  const [current, setCurrent] = useState(savedProgress.current || 0);
-  const [count, setCount] = useState(savedProgress.count || 0);
+  const type = "masaa";
+const progressKey = `${type}_athkar_progress`;
+const taskName = `${type}_athkar`;
+
+const savedProgress = JSON.parse(localStorage.getItem(progressKey) || "{}");
+const completedTasks = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+
+// Current Bahrain time
+const now = new Date();
+const bahrainTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bahrain" }));
+const currentHour = bahrainTime.getHours();
+const currentDateStr = bahrainTime.toISOString().split("T")[0];
+
+// Get the last date this athkar was marked completed
+const lastCompletedDate = Object.keys(completedTasks).find(date =>
+  completedTasks[date]?.includes(taskName)
+);
+
+// Determine if reset is needed
+const shouldReset =
+  lastCompletedDate &&
+  lastCompletedDate !== currentDateStr &&
+  currentHour >= 4;
+
+const initialCurrent = shouldReset ? 0 : savedProgress.current || 0;
+const initialCount = shouldReset ? 0 : savedProgress.count || 0;
+
+const [current, setCurrent] = useState(initialCurrent);
+const [count, setCount] = useState(initialCount);
+
+// Optional: clear progress in storage if reset
+if (shouldReset) {
+  localStorage.setItem(progressKey, JSON.stringify({ current: 0, count: 0 }));
+}
+
   const navigate = useNavigate();
   const thikr = masaaAthkar[current];
   const isLastThikr = current === masaaAthkar.length - 1;
