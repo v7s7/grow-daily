@@ -143,39 +143,55 @@ export default function HomePage() {
   // Handle streak logic
   useEffect(() => {
     if (!userId) return;
+  
+    const runMidnightCheck = async () => {
+      const now = new Date();
+const today = now.toLocaleDateString("en-CA"); // format: YYYY-MM-DD
+const yesterday = new Date(now.getTime() - 86400000).toLocaleDateString("en-CA");
 
-    const todayDate = new Date().toISOString().split("T")[0];
-    const yesterdayDate = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-    const lastDate = localStorage.getItem("lastStreakDate");
-
-    const updateFirestore = async (updatedStreak, completed) => {
-      const ref = doc(db, "users", userId);
-      const stored = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-      stored[today] = completed;
-      await setDoc(ref, {
-        streak: updatedStreak,
-        completedTasks: stored,
-        lastStreakDate: todayDate
-      }, { merge: true });
-
-      localStorage.setItem("streak", updatedStreak);
-      localStorage.setItem("lastStreakDate", todayDate);
-      localStorage.setItem("completedTasks", JSON.stringify(stored));
-    };
-
-    if (progressPercent === 100) {
-      if (lastDate !== todayDate) {
-        const newStreak = (lastDate === yesterdayDate) ? streak + 1 : 1;
+      const lastDate = localStorage.getItem("lastStreakDate");
+  
+      const allTasksCompleted = completedCount === totalTasks;
+  
+      const updateFirestore = async (updatedStreak) => {
+        const ref = doc(db, "users", userId);
+        const stored = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+        stored[today] = completedTasks;
+        await setDoc(ref, {
+          streak: updatedStreak,
+          completedTasks: stored,
+          lastStreakDate: today
+        }, { merge: true });
+  
+        localStorage.setItem("streak", updatedStreak);
+        localStorage.setItem("lastStreakDate", today);
+        localStorage.setItem("completedTasks", JSON.stringify(stored));
+      };
+  
+      if (lastDate === today) return; // already updated
+  
+      if (allTasksCompleted) {
+        const newStreak = (lastDate === yesterday) ? streak + 1 : 1;
         setStreak(newStreak);
-        updateFirestore(newStreak, completedTasks);
-      }
-    } else {
-      if (lastDate && lastDate !== todayDate && lastDate !== yesterdayDate) {
+        await updateFirestore(newStreak);
+      } else {
         setStreak(0);
-        updateFirestore(0, completedTasks);
+        await updateFirestore(0);
       }
-    }
-  }, [progressPercent, userId]);
+    };
+  
+    // Calculate how long until 00:01 (1 minute after midnight)
+    const now = new Date();
+    const nextMidnight = new Date();
+    nextMidnight.setHours(0, 1, 0, 0); // 00:01:00
+    if (nextMidnight <= now) nextMidnight.setDate(nextMidnight.getDate() + 1);
+  
+    const delay = nextMidnight.getTime() - now.getTime();
+    const timer = setTimeout(runMidnightCheck, delay);
+  
+    return () => clearTimeout(timer);
+  }, [completedCount, totalTasks, userId]);
+  
 
   // Handle daily quote
   useEffect(() => {
