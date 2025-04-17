@@ -118,8 +118,9 @@ export default function HomePage() {
         const data = snap.data();
     
         setStreak(data.streak || 0);
-        setCompletedTasks(data.completedTasks?.[today] || []);
-        
+        const todayCompleted = data.completedTasks?.[today] || {};
+        setCompletedTasks(Object.keys(todayCompleted));
+                
         // ✅ ADD THESE 4 LINES BELOW
         setAvailablePoints(data.availablePoints || 0);
         localStorage.setItem("availablePoints", data.availablePoints || 0);
