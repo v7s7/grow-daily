@@ -27,7 +27,7 @@ export default function NavBar({ language = "en" }) {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <>
+    <div className="navbar"> {/* ✅ wrap everything inside this */}
       <div className="hamburger-container">
         <div
           className="logo"
@@ -44,13 +44,13 @@ export default function NavBar({ language = "en" }) {
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
         <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
-<span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
-  {language === "ar" ? "التحكم بالمهام" : "Task Control"}
-</span>
+        <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
+          {language === "ar" ? "التحكم بالمهام" : "Task Control"}
+        </span>
         <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
       </div>
 
       {menuOpen && <div className="overlay" onClick={closeMenu}></div>}
-    </>
+    </div>
   );
 }

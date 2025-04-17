@@ -146,10 +146,16 @@ if (shouldReset) {
       className="task-page-container"
       style={{ direction: "rtl", textAlign: "center" }}
       onClick={(e) => {
-        if (e.target.tagName !== "BUTTON" && e.target.tagName !== "svg" && e.target.tagName !== "circle") {
+        if (
+          !e.target.closest(".navbar") &&
+          e.target.tagName !== "BUTTON" &&
+          e.target.tagName !== "svg" &&
+          e.target.tagName !== "circle"
+        ) {
           handleCircleClick();
         }
       }}
+      
     >
       <h2 style={{ marginBottom: "20px" }}>أذكار المساء</h2>
 
@@ -230,7 +236,7 @@ if (shouldReset) {
         </div>
       </div>
 
-      <NavBar />
-    </div>
+      <NavBar className="navbar" />
+      </div>
   );
 }
