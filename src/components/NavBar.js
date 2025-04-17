@@ -40,15 +40,19 @@ export default function NavBar({ language = "en" }) {
       </div>
 
       <div className={`sidebar ${menuOpen ? "open" : ""}`}>
-        <div className="close-btn" onClick={closeMenu}>×</div>
-        <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
-        <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
-        <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
-        <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
-          {language === "ar" ? "التحكم بالمهام" : "Task Control"}
-        </span>
-        <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
-      </div>
+  <div className="close-btn" onClick={closeMenu}>×</div>
+  <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
+  <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
+  <span onClick={() => { navigate("/calendar"); closeMenu(); }}>
+    {language === "ar" ? "التقويم" : "Calendar"}
+  </span>
+  <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
+  <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
+    {language === "ar" ? "التحكم بالمهام" : "Task Control"}
+  </span>
+  <span onClick={() => { navigate("/settings"); closeMenu(); }}>{t[language].settings}</span>
+</div>
+
 
       {menuOpen && <div className="overlay" onClick={closeMenu}></div>}
     </div>

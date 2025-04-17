@@ -246,7 +246,7 @@ const yesterday = new Date(now.getTime() - 86400000).toLocaleDateString("en-CA")
 
 
 
-      <div className="task-grid">
+<div className={`task-grid ${selectedTasks.length === 1 ? 'single-task' : ''}`}>
   {selectedTasks.map((task) => {
     let className = "task-card";
 

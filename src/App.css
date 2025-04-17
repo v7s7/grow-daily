@@ -609,7 +609,7 @@ button:disabled {
 
   .task-card img {
     width: 100%;
-    max-height: 70px;
+    max-height: 100%;
     object-fit: contain;
     margin-bottom: 5px;
   }
@@ -634,4 +634,29 @@ button:disabled {
 @keyframes fade {
   from { opacity: 0.3; }
   to { opacity: 1; }
+}
+/* === Center single task on both PC and phone === */
+.task-grid.single-task {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+/* Optional: limit size of the card */
+.task-grid.single-task .task-card {
+  max-width: 220px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+@media screen and (max-width: 600px) {
+  .task-grid.single-task {
+    padding: 12px 0;
+  }
+
+  .task-grid.single-task .task-card {
+    max-width: 80%;
+  }
 }
