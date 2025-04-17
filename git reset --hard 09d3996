@@ -1,0 +1,38 @@
+[33m51f0f0e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m testing calender on phone
+[33mc6572bd[m Css calendar
+[33mdbb87dd[m Add calendar view with daily progress and task completion colors
+[33m09d3996[m prevent accidental clicks from navbar counts in Athkar
+[33mc644ce5[m Improved streak system check using phone time
+[33m457e5f5[m added reset for athkar at 4am Bahrain time, reordered finished tasks, improved edit view for Mission control
+[33m4624c30[m Created Mission Control view for task prioritization
+[33m67e577c[m Feature: Implement To-Do list with Firestore sync and task sorting
+[33m10a264c[m Fix: enforce 85-point daily cap and 2-submission reward limit
+[33m045256a[m fixed water points logic 10 points max
+[33mb15efce[m Full points logic implemented for all tasks , Gym checkbox style updated, (max 15pts)
+[33m2611c62[m Final updates to study and Quran page timer and notifications
+[33me8320c1[m Add: GlobalTimerWatcher for background notifications
+[33mf39a978[m Fix: Study timer now works in background using real time check + notifications
+[33m472d139[m notifications, and localStorage sync
+[33m4541e7c[m Update: Styled progress bar and button for Athkar page
+[33m44756f8[m Fix: Mobile layout for Athkar page and toggle cleanup
+[33md0eda44[m Finalized AuthPage with validation, error messaging
+[33m1a0331a[m Fix: Make athkar cards square and remove duplicate media queries
+[33md5d815d[m GrowDaily fade-in loading screen
+[33mf73104b[m Add Firebase auth persistence and protect routes
+[33m1e5e599[m Update icons and manifest
+[33m9465615[m Finalize mobile layout fixes and polish GrowDaily for deployment
+[33mcbd3a2b[m Testing icon on iphones under 400px
+[33m6f9c7ea[m Fix mobile task card stretching and correct grid layout for screens under 400px
+[33m2f15c31[m Fix responsive layout for WaterPage and AthkarPage cards
+[33mfc93dd1[m Save user name and email to Firestore
+[33m7939a6a[m Improve Athkar logic: split progress between sabah and masaa
+[33macae555[m Add full Sabah Athkar tracking with submission, Firestore sync, and redirect to home
+[33mc240a8a[m Enhanced task validations: required rating + fields on Quran, Study, and Gym. Added 'Full Body' and 'Cardio' options to Gym.
+[33m657460c[m Updated all task pages: centered layout + added Back to Home buttons
+[33m82dcdec[m Sync user task plan to Firestore + improve SettingsPage layout and style
+[33m6baeb06[m  Improved SettingsPage layout with task grid, central alignment, and logout
+[33m35338cb[m Connected Firestore and synced All tasks pages & changes some designs in home page
+[33m0da3aa7[m Resolved merge conflicts in .gitignore
+[33m6b9ed83[m Initial commit
+[33m13cd391[m Initial commit
+[33m3b8ca43[m Initialize project using Create React App

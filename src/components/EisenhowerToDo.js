@@ -175,26 +175,30 @@ export default function EisenhowerToDo() {
         <CategoryBox key={catKey} color={colors[catKey]}>
           <h3>{t[catKey]}</h3>
           {editMode && (
-  <label
-  style={{
-    cursor: "pointer",
-    display: "inline-block",
-    marginBottom: "10px",
-    fontSize: "20px",
-    marginLeft: "10px" // ← this acts like a tab
-  }}
->
-  🎨
-  <input
-    type="color"
-    value={colors[catKey]}
-    onChange={(e) => handleColorChange(catKey, e.target.value)}
-    style={{ display: "none" }}
-  />
-</label>
-
-
+  <div style={{ display: "inline-block", position: "relative", marginLeft: "10px" }}>
+    <button
+      style={{
+        background: "transparent",
+        border: "none",
+        fontSize: "20px",
+        cursor: "pointer",
+        padding: 0,
+      }}
+      onClick={() => document.getElementById(`${catKey}-color`).click()}
+      aria-label="Change Color"
+    >
+      🎨
+    </button>
+    <input
+      id={`${catKey}-color`}
+      type="color"
+      value={colors[catKey]}
+      onChange={(e) => handleColorChange(catKey, e.target.value)}
+      style={{ position: "absolute", opacity: 0, width: "30px", height: "30px", pointerEvents: "none" }}
+    />
+  </div>
 )}
+
 
 
           <TaskList>
