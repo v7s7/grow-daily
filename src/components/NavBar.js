@@ -13,6 +13,7 @@ export default function NavBar({ language = "en" }) {
       settings: "Settings",
       todo: "To-Do List",
       title: "GrowDaily",
+      Calendar:"Calendar"
     },
     ar: {
       home: "الرئيسية",
@@ -20,6 +21,7 @@ export default function NavBar({ language = "en" }) {
       settings: "الإعدادات",
       todo: "قائمة المهام",
       title: "GrowDaily",
+      Calendar : "التقويم"
     },
   };
 
@@ -43,6 +45,7 @@ export default function NavBar({ language = "en" }) {
         <div className="close-btn" onClick={closeMenu}>×</div>
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
         <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
+        <span onClick={() => { navigate("/calendar"); closeMenu(); }}>{t[language].Calendar}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
         <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
           {language === "ar" ? "التحكم بالمهام" : "Task Control"}
