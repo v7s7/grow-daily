@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import '../styles/CalendarPage.css';
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import NavBar from "./NavBar";
+import { useNavigate } from "react-router-dom";
 
 const getLocalDateStr = (date) => {
   const local = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Bahrain" }));
@@ -15,6 +16,8 @@ const getLocalDateStr = (date) => {
 };
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
+
   const [completed, setCompleted] = useState({});
   const [showPopup, setShowPopup] = useState(false);
   const [selectedDateStr, setSelectedDateStr] = useState("");
@@ -22,6 +25,10 @@ export default function CalendarPage() {
   const [value, setValue] = useState(new Date());
   const [activeStartDate, setActiveStartDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState("month");
+
+  const selectedPlan = useMemo(() => {
+    return JSON.parse(localStorage.getItem("selectedTasks") || "[]");
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,13 +46,12 @@ export default function CalendarPage() {
   const getColorClass = (date) => {
     const day = getLocalDateStr(date);
     const todayTasks = completed[day] || [];
-    const plan = JSON.parse(localStorage.getItem("selectedTasks") || "[]");
     const todayStr = getLocalDateStr(new Date());
     const isToday = day === todayStr;
 
     if (!todayTasks.length) return isToday ? "today-outline" : "";
 
-    const isFull = plan.length === 0 || todayTasks.length === plan.length;
+    const isFull = selectedPlan.length === 0 || todayTasks.length === selectedPlan.length;
 
     if (isFull) return isToday ? "today-outline full" : "full";
     return isToday ? "today-outline partial" : "partial";
@@ -67,11 +73,11 @@ export default function CalendarPage() {
   };
 
   return (
-<div className="calendar-fullscreen">
-<h2 style={{ textAlign: "center" }}>📅 Progress Calendar</h2>
+    <div className="calendar-fullscreen">
+      <h2 style={{ textAlign: "center" }}>📅 Progress Calendar</h2>
 
       <div className="calendar-controls">
-        <button onClick={() => window.location.href = "/home"}>🏠 Home</button>
+        <button onClick={() => navigate("/home")}>🏠 Home</button>
         <button onClick={handleTodayClick}>📆 Today</button>
       </div>
 
@@ -106,7 +112,13 @@ export default function CalendarPage() {
             ) : (
               <p>No tasks completed.</p>
             )}
-            <button onClick={() => setShowPopup(false)}>Close</button>
+            <button
+              onClick={() => setShowPopup(false)}
+              aria-label="Close task popup"
+              autoFocus
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
