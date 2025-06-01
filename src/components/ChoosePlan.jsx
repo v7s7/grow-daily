@@ -11,15 +11,24 @@ export default function ChoosePlan() {
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const taskOptions = ["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"];
+  // Define categories and tasks
+  const categories = {
+    All: ["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"],
+    Islamic: ["quran", "athkar"],
+    Sport: ["gym"],
+    Study: ["study"],
+    Health: ["water", "sleep"],
+    Lifestyle: ["phone", "shower"]
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
       } else {
-        navigate("/auth"); // Redirect to login if not signed in
+        navigate("/auth");
       }
       setCheckingAuth(false);
     });
@@ -50,22 +59,42 @@ export default function ChoosePlan() {
       await setDoc(doc(db, "users", user.uid), { plan: selectedTasks }, { merge: true });
       localStorage.setItem("tasks", JSON.stringify(selectedTasks));
       navigate("/home");
-      window.location.reload(); // <-- Force reload to re-trigger App.js plan check
+      window.location.reload();
     } catch (error) {
       console.error("Error saving plan:", error);
       alert("Error saving your plan. Please try again.");
     }
   };
 
-  if (checkingAuth) return null; // Wait for auth check to complete
+  if (checkingAuth) return null;
+
+  // Filter tasks based on selected category
+  const displayedTasks = selectedCategory === "All" ? categories.All : categories[selectedCategory];
 
   return (
     <div className="settings-wrapper">
       <h2>Choose Your Plan</h2>
       <h3>You can change it later</h3>
 
+      <div className="button-group">
+        {Object.keys(categories).map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            style={{ fontWeight: selectedCategory === category ? "bold" : "normal" }}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
+      {/* Task Count Display */}
+      <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+        Tasks chosen: {selectedTasks.length}
+      </p>
+
       <div className="task-grid">
-        {taskOptions.map((task) => (
+        {displayedTasks.map((task) => (
           <div
             key={task}
             onClick={() => handleTaskToggle(task)}

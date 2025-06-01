@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
 import "./SettingsPage.css";
 import NavBar from "./NavBar";
+
 export default function SettingsPage() {
   const navigate = useNavigate();
 
@@ -13,8 +13,16 @@ export default function SettingsPage() {
   const [selectedTasks, setSelectedTasks] = useState(
     JSON.parse(localStorage.getItem("tasks") || '["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"]')
   );
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const taskOptions = ["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"];
+  const categories = {
+    All: ["quran", "gym", "study", "water", "sleep", "phone", "athkar", "shower"],
+    Islamic: ["quran", "athkar"],
+    Sport: ["gym"],
+    Study: ["study"],
+    Health: ["water", "sleep"],
+    Lifestyle: ["phone", "shower"]
+  };
 
   const t = {
     en: {
@@ -62,6 +70,8 @@ export default function SettingsPage() {
     navigate("/auth");
   };
 
+  const displayedTasks = selectedCategory === "All" ? categories.All : categories[selectedCategory];
+
   return (
     <div className="settings-wrapper" style={{ direction: language === "ar" ? "rtl" : "ltr" }}>
       <h2>{t[language].title}</h2>
@@ -78,8 +88,27 @@ export default function SettingsPage() {
 
       <div className="section">
         <h4>{t[language].tasks}</h4>
+
+        {/* Categories Filter */}
+        <div className="button-group">
+          {Object.keys(categories).map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              style={{ fontWeight: selectedCategory === category ? "bold" : "normal" }}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        {/* Task Count Display */}
+        <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+          Tasks chosen: {selectedTasks.length}
+        </p>
+
         <div className="task-grid">
-          {taskOptions.map((task) => {
+          {displayedTasks.map((task) => {
             const isSelected = selectedTasks.includes(task);
             const label =
               language === "en"
@@ -121,8 +150,8 @@ export default function SettingsPage() {
       <button onClick={handleLogout} className="logout-button">
         {t[language].logout}
       </button>
-            <NavBar />
-      
+
+      <NavBar />
     </div>
   );
 }
