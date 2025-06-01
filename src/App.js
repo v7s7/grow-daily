@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebaseConfig";
+import { doc, getDoc } from "firebase/firestore"; // Firestore functions
+import { auth, db } from "./firebaseConfig"; // Ensure db is exported from firebaseConfig
 import AuthPage from "./components/AuthPage";
 import HomePage from "./components/HomePage";
 import SettingsPage from "./components/SettingsPage";
@@ -18,42 +19,60 @@ import SabahAthkarPage from "./components/tasks/SabahAthkarPage";
 import MasaaAthkarPage from "./components/tasks/MasaaAthkarPage";
 import ShowerTaskPage from "./components/tasks/ShowerTaskPage";
 import GlobalTimerWatcher from "./components/GlobalTimerWatcher";
-import ToDoList from "./components/ToDoList"; 
+import ToDoList from "./components/ToDoList";
 import EisenhowerToDo from "./components/EisenhowerToDo";
-
+import ChoosePlan from "./components/ChoosePlan";
 import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [needsPlan, setNeedsPlan] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        try {
+          const userRef = doc(db, "users", currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          if (!userSnap.exists() || !userSnap.data().plan) {
+            setNeedsPlan(true); // No plan, redirect needed
+          } else {
+            setNeedsPlan(false); // Plan exists
+          }
+        } catch (error) {
+          console.error("Error checking user plan:", error);
+          setNeedsPlan(true); // Safe default
+        }
+      } else {
+        setNeedsPlan(false);
+      }
       setChecking(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (checking) return (
-    <div className="loading-screen">
-      <h1 className="fade-in">Ready to GrowDaily?</h1>
-    </div>
-  );
-  
+  if (checking) {
+    return (
+      <div className="loading-screen">
+        <h1 className="fade-in">Ready to GrowDaily?</h1>
+      </div>
+    );
+  }
+
   return (
-    
     <div>
       <GlobalTimerWatcher />
       <Router>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={user ? <Navigate to="/home" /> : <AuthPage />} />
-          <Route path="/auth" element={user ? <Navigate to="/home" /> : <AuthPage />} />
-  
+          <Route path="/" element={user ? <Navigate to={needsPlan ? "/choose-plan" : "/home"} /> : <AuthPage />} />
+          <Route path="/auth" element={user ? <Navigate to={needsPlan ? "/choose-plan" : "/home"} /> : <AuthPage />} />
+
           {/* Protected Routes */}
-          <Route path="/home" element={user ? <HomePage /> : <Navigate to="/auth" />} />
+          <Route path="/home" element={user ? (needsPlan ? <Navigate to="/choose-plan" /> : <HomePage />) : <Navigate to="/auth" />} />
           <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
           <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
           <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
@@ -69,9 +88,10 @@ function App() {
           <Route path="/task/athkar/sabah" element={user ? <SabahAthkarPage /> : <Navigate to="/auth" />} />
           <Route path="/task/athkar/masaa" element={user ? <MasaaAthkarPage /> : <Navigate to="/auth" />} />
           <Route path="/task/shower" element={user ? <ShowerTaskPage /> : <Navigate to="/auth" />} />
+          <Route path="/choose-plan" element={user ? <ChoosePlan /> : <Navigate to="/auth" />} />
         </Routes>
       </Router>
-      </div>
+    </div>
   );
 }
 

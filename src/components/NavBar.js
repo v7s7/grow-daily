@@ -44,7 +44,7 @@ export default function NavBar({ language = "en" }) {
       <div className={`sidebar ${menuOpen ? "open" : ""}`}>
         <div className="close-btn" onClick={closeMenu}>×</div>
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
-        <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span>
+        {/* <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span> */}
         <span onClick={() => { navigate("/calendar"); closeMenu(); }}>{t[language].Calendar}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
         <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
