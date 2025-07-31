@@ -76,17 +76,16 @@ export default function ChoosePlan() {
       <h2>Choose Your Plan</h2>
       <h3>You can change it later</h3>
 
-      <div className="button-group">
-        {Object.keys(categories).map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            style={{ fontWeight: selectedCategory === category ? "bold" : "normal" }}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+      <div className="category-select">
+  <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+    {Object.keys(categories).map((category) => (
+      <option key={category} value={category}>
+        {category}
+      </option>
+    ))}
+  </select>
+</div>
+
 
       {/* Task Count Display */}
       <p style={{ fontWeight: "bold", marginTop: "10px" }}>

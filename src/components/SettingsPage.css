@@ -67,21 +67,75 @@
     margin: 30px 0;
   }
   
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  max-width: 600px;
+}
+
+.button-group button {
+  padding: 10px 16px;
+  border: 2px solid #f5c84c;
+  background-color: transparent;
+  color: #f5c84c;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.button-group button:hover {
+  background-color: #f5c84c;
+  color: #000;
+  transform: scale(1.03);
+}
+
+.button-group button.selected {
+  background-color: #f5c84c;
+  color: #000;
+  font-weight: bold;
+}
+@media screen and (max-width: 480px) {
   .button-group {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 10px;
-    margin-bottom: 30px;
+    flex-direction: column;
+    align-items: center;
   }
-  
-  .logout-button {
-    background-color: #f44336;
-    color: #fff;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
+
+  .button-group button {
     width: 100%;
     max-width: 300px;
+    text-align: center;
   }
+}
+  .category-select {
+  margin: 20px 0;
+}
+
+.category-select select {
+  padding: 10px 14px;
+  border: 2px solid #f5c84c;
+  background-color: #0b1f36;
+  color: #f5c84c;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  max-width: 300px;
+  width: 100%;
+}
+
+.category-select select:focus {
+  border-color: #fbbf24;
+}
+.logout-button{
+  background-color: rgb(228, 72, 72);
+  color : white
   
+}.logout-button:hover{
+  background-color: rgb(228, 72, 72);
+  color : white
+  
+}
