@@ -3,12 +3,12 @@ import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth"
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDPRsJ600XqWwWxpq4a6YQPoY1PM80v0iE",
-  authDomain: "grow-daily-339ef.firebaseapp.com",
-  projectId: "grow-daily-339ef",
-  storageBucket: "grow-daily-339ef.appspot.com",
-  messagingSenderId: "508215311979",
-  appId: "1:508215311979:web:76e5b77a301b7e931fbb2e",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

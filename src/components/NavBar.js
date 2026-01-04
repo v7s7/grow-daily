@@ -9,6 +9,7 @@ export default function NavBar({ language = "en" }) {
   const t = {
     en: {
       home: "Home",
+      insights: "Insights",
       aquarium: "Aquarium",
       settings: "Settings",
       todo: "To-Do List",
@@ -17,6 +18,7 @@ export default function NavBar({ language = "en" }) {
     },
     ar: {
       home: "الرئيسية",
+      insights: "الإحصائيات",
       aquarium: "الحوض",
       settings: "الإعدادات",
       todo: "قائمة المهام",
@@ -34,7 +36,7 @@ export default function NavBar({ language = "en" }) {
         <div
           className="logo"
           style={{ cursor: "pointer", minWidth: "100px", textAlign: "left" }}
-          onClick={() => navigate("/home")}
+          onClick={() => { navigate("/home"); closeMenu(); }}
         >
           {t[language].title}
         </div>
@@ -44,7 +46,7 @@ export default function NavBar({ language = "en" }) {
       <div className={`sidebar ${menuOpen ? "open" : ""}`}>
         <div className="close-btn" onClick={closeMenu}>×</div>
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
-        {/* <span onClick={() => { navigate("/aquarium"); closeMenu(); }}>{t[language].aquarium}</span> */}
+        <span onClick={() => { navigate("/insights"); closeMenu(); }}>{t[language].insights}</span>
         <span onClick={() => { navigate("/calendar"); closeMenu(); }}>{t[language].Calendar}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
         <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>
