@@ -10,6 +10,8 @@ export default function NavBar({ language = "en" }) {
     en: {
       home: "Home",
       insights: "Insights",
+      friends: "Friends",
+      leaderboard: "Leaderboard",
       aquarium: "Aquarium",
       settings: "Settings",
       todo: "To-Do List",
@@ -19,6 +21,8 @@ export default function NavBar({ language = "en" }) {
     ar: {
       home: "الرئيسية",
       insights: "الإحصائيات",
+      friends: "الأصدقاء",
+      leaderboard: "المتصدرين",
       aquarium: "الحوض",
       settings: "الإعدادات",
       todo: "قائمة المهام",
@@ -47,6 +51,8 @@ export default function NavBar({ language = "en" }) {
         <div className="close-btn" onClick={closeMenu}>×</div>
         <span onClick={() => { navigate("/home"); closeMenu(); }}>{t[language].home}</span>
         <span onClick={() => { navigate("/insights"); closeMenu(); }}>{t[language].insights}</span>
+        <span onClick={() => { navigate("/friends"); closeMenu(); }}>{t[language].friends}</span>
+        <span onClick={() => { navigate("/leaderboard"); closeMenu(); }}>{t[language].leaderboard}</span>
         <span onClick={() => { navigate("/calendar"); closeMenu(); }}>{t[language].Calendar}</span>
         <span onClick={() => { navigate("/todolist"); closeMenu(); }}>{t[language].todo}</span>
         <span onClick={() => { navigate("/eisenhower"); closeMenu(); }}>

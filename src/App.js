@@ -18,6 +18,11 @@ const ToDoList = lazy(() => import("./components/ToDoList"));
 const EisenhowerToDo = lazy(() => import("./components/EisenhowerToDo"));
 const ChoosePlan = lazy(() => import("./components/ChoosePlan"));
 
+// Social pages
+const FriendsPage = lazy(() => import("./components/FriendsPage"));
+const FriendProfile = lazy(() => import("./components/FriendProfile"));
+const LeaderboardPage = lazy(() => import("./components/LeaderboardPage"));
+
 // Task pages
 const QuranPage = lazy(() => import("./components/tasks/QuranPage"));
 const StudyPage = lazy(() => import("./components/tasks/StudyPage"));
@@ -90,6 +95,9 @@ function App() {
             <Route path="/home" element={user ? (needsPlan ? <Navigate to="/choose-plan" /> : <HomePage />) : <Navigate to="/auth" />} />
             <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
             <Route path="/insights" element={user ? <InsightsPage /> : <Navigate to="/auth" />} />
+            <Route path="/friends" element={user ? <FriendsPage /> : <Navigate to="/auth" />} />
+            <Route path="/friend/:friendId" element={user ? <FriendProfile /> : <Navigate to="/auth" />} />
+            <Route path="/leaderboard" element={user ? <LeaderboardPage /> : <Navigate to="/auth" />} />
             <Route path="/aquarium" element={user ? <AquariumPage /> : <Navigate to="/auth" />} />
             <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/auth" />} />
             <Route path="/todolist" element={user ? <ToDoList /> : <Navigate to="/auth" />} />
