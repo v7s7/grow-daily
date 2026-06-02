@@ -1,13 +1,13 @@
-/* AthkarPage.css */
+/* AthkarPage.css — aligned to App.css design system */
 
 .thikr-box {
-  background-color:rgb(4, 23, 43);
+  background: #1C1C1E;
   padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  margin: auto;
-  max-width: 500px;
-  min-height: 360px;
+  border-radius: 20px;
+  border: 1px solid rgba(84, 84, 88, 0.3);
+  margin: 0 auto;
+  max-width: 480px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -21,67 +21,65 @@
 }
 
 .thikr-text {
-  /* color:rgb(231, 231, 231) !important; */
   font-size: 1.1rem;
   white-space: pre-wrap;
   line-height: 2;
-  margin-bottom: 16px !important;
-  line-height: 45px;
+  margin-bottom: 16px;
+  color: rgba(235, 235, 245, 0.9);
 }
 
 .thikr-benefit {
-  color:rgb(255, 255, 255) !important;
-  font-size: 0.9rem;
+  color: rgba(235, 235, 245, 0.75);
+  font-size: 0.875rem;
   margin-bottom: 16px;
-  font-weight: bold;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 10px;
-  border-radius: 8px;
+  font-weight: 600;
+  background: rgba(84, 84, 88, 0.18);
+  padding: 10px 14px;
+  border-radius: 12px;
 }
 
 .circle-count {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   margin: auto;
-  background-color: #f8cc6a;
-  color: #021d34;
+  background: #F5C533;
+  color: #000000;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 18px;
   cursor: pointer;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
 
-.next-button {
-  font-family: 'Cairo' !important;
-  font-size: 20px !important;
-  background-color: #f8cc6a;
-  color: #021d34;
-  border: none;
-  padding: 5px 19px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
+.circle-count:active {
+  transform: scale(0.9);
+  opacity: 0.8;
 }
+
+.next-button,
 .back-button {
-  font-family: 'Cairo' !important;
-  font-size: 20px !important;
-  background-color: #f8cc6a;
-  color: #021d34;
+  background: #F5C533;
+  color: #000000;
   border: none;
-  padding: 5px 19px;
-  font-weight: bold;
-  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: 0.2s ease-in-out;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
 }
 
-
-.next-button:hover {
-  background-color: #ffd666;
+.next-button:active,
+.back-button:active {
+  transform: scale(0.95);
+  opacity: 0.85;
 }
 
 .circle-progress {
@@ -103,7 +101,7 @@
 }
 
 .circle-bg {
-  stroke: #2a2f58;
+  stroke: rgba(84, 84, 88, 0.4);
 }
 
 .button-wrapper {
@@ -113,36 +111,26 @@
   margin-top: 24px;
 }
 
-.task-card.completed {
-  box-shadow: 0 0 10px 2px #4caf50;
-  border: 2px solid #4caf50;
-}
-
-.task-card.in-progress {
-  box-shadow: 0 0 12px 2px #f5c84c !important;
-  border: 2px solid #f5c84c !important;
-  transition: all 0.3s ease-in-out;
-}
 .athkar-progress {
   width: 100%;
-  height: 14px;
-  border-radius: 8px;
-  background-color: #2a2f58;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(84, 84, 88, 0.35);
   appearance: none;
   overflow: hidden;
   margin-bottom: 8px;
 }
 
 .athkar-progress::-moz-progress-bar {
-  background-color: #f5c84c; 
-  transition: background-color 0.3s ease;
+  background: #F5C533;
+  transition: background 0.3s ease;
 }
 
 .athkar-progress::-webkit-progress-bar {
-  background-color: #2a2f58;
+  background: rgba(84, 84, 88, 0.35);
 }
 
 .athkar-progress::-webkit-progress-value {
-  background-color: #f5c84c; /* default */
-  transition: background-color 0.3s ease;
+  background: #F5C533;
+  transition: background 0.3s ease;
 }

@@ -2,6 +2,7 @@
     --checkbox-size: 25px;
     --checkbox-color: #f8cc6a;
     --checkbox-border: #f8cc6a;
+    --checkbox-shadow: rgba(248, 204, 106, 0.45);
     display: flex;
     align-items: center;
     position: relative;

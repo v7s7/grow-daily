@@ -134,28 +134,30 @@ const Checkbox = () => {
 
 
 const Wrapper = styled.div`
-  display: grid;
-  justify-content: center;
-  gap: 20px;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: max(env(safe-area-inset-top, 0px), 16px) 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
 
   #checklist {
-    --background:rgb(0, 19, 36);
+    --background: #1C1C1E;
     --text: #f8cc6a;
     --check: #f8cc6a;
-    --disabled:rgb(163, 163, 163);
-    --width: 100px;
-    --height: auto;
-    --border-radius: 10px;
+    --disabled: rgba(235, 235, 245, 0.4);
+    --border-radius: 16px;
     background: var(--background);
-    width: 260px;
+    width: 100%;
     border-radius: var(--border-radius);
-    box-shadow: 0 10px 30px rgba(65, 72, 86, 0.05);
-    padding: 30px 40px;
+    border: 1px solid rgba(84, 84, 88, 0.3);
+    padding: 20px 16px;
     display: grid;
-    grid-template-columns: 30px auto 20px;
+    grid-template-columns: 28px 1fr 24px;
     align-items: center;
     gap: 10px;
+    box-sizing: border-box;
   }
 .completed-label,
 .task-divider {
@@ -300,9 +302,13 @@ const Wrapper = styled.div`
   .remove-btn {
     background: transparent;
     border: none;
-    color: red;
-    font-weight: bold;
+    color: #FF453A;
+    font-weight: 700;
     cursor: pointer;
+    padding: 4px;
+    font-size: 14px;
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
   }
 
   
@@ -319,13 +325,16 @@ const Wrapper = styled.div`
 
 .add-task input {
   flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  background-color: #021d34;
-  border: 1px solid #f8cc6a;
-  color: #f8cc6a;
-  font-size: 14px;
-  margin-top:10px
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #1C1C1E;
+  border: 1.5px solid rgba(84, 84, 88, 0.45);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+  min-width: 0;
 }
 
 .add-task input::placeholder {
@@ -334,21 +343,18 @@ const Wrapper = styled.div`
 }
 
 .add-task button {
-margin-top:0px;
-  padding: 10px 20px;
-  background: #f8cc6a;
-  color: #021d34;
+  padding: 12px 20px;
+  background: #F5C533;
+  color: #000000;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.add-task button:hover {
-  background-color: #ffda74;
-  transform: scale(1.05);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 
@@ -455,26 +461,13 @@ margin-top:0px;
         -14px 8px 0 0px #f8cc6a,
         -14px -8px 0 0px #f8cc6a;
     }
-        .todo-title {
-  text-align: center;
-  font-size: 20px;
-  color: #f8cc6a;
-  margin-bottom: 16px;
-  grid-column: span 3; /* spans full width of grid */
-}
+  }
 
-.add-task .add-btn {
-  background-color: #f8cc6a;
-  color: #021d34;
-  font-weight: bold;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  transition: all 0.25s ease;
-}
-
-
-
+  .todo-title {
+    text-align: center;
+    font-size: 20px;
+    color: #f8cc6a;
+    margin-bottom: 16px;
   }
 `;
 

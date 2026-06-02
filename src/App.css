@@ -3,6 +3,29 @@
    ============================================================ */
 
 /* ========================
+   DESIGN TOKENS
+   ======================== */
+:root {
+  --color-bg-primary:    #000000;
+  --color-bg-secondary:  #1C1C1E;
+  --color-bg-tertiary:   #2C2C2E;
+  --color-accent:        #F5C533;
+  --color-accent-bg:     rgba(245, 197, 51, 0.12);
+  --color-accent-border: rgba(245, 197, 51, 0.35);
+  --color-green:         #34C759;
+  --color-green-bg:      rgba(52, 199, 89, 0.1);
+  --color-green-border:  rgba(52, 199, 89, 0.45);
+  --color-red:           #FF453A;
+  --color-orange:        #FF9F0A;
+  --color-separator:     rgba(84, 84, 88, 0.55);
+  --color-separator-sm:  rgba(84, 84, 88, 0.3);
+  --color-label-1:       #FFFFFF;
+  --color-label-2:       rgba(235, 235, 245, 0.70);
+  --color-label-3:       rgba(235, 235, 245, 0.50);
+  --color-label-4:       rgba(235, 235, 245, 0.28);
+}
+
+/* ========================
    BASE
    ======================== */
 body {
@@ -170,13 +193,13 @@ hr {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 122, 255, 0.12);
-  border: 1px solid rgba(0, 122, 255, 0.25);
+  background: rgba(245, 197, 51, 0.12);
+  border: 1px solid rgba(245, 197, 51, 0.35);
   border-radius: 12px;
   padding: 4px 10px;
   font-size: 13px;
   font-weight: 600;
-  color: #409CFF;
+  color: #F5C533;
 }
 
 /* Tasks section */
@@ -442,6 +465,26 @@ button:active:not(:disabled) {
 button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+/* ========================
+   TIMER BUTTONS
+   ======================== */
+.timer-btn--start,
+.timer-btn--resume {
+  background: #30D158;
+  color: #000000;
+}
+
+.timer-btn--pause {
+  background: #FF9F0A;
+  color: #000000;
+}
+
+.timer-btn--stop {
+  background: #FF453A;
+  color: #FFFFFF;
+  margin-inline-start: 10px;
 }
 
 /* ========================

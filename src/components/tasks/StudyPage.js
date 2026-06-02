@@ -262,16 +262,16 @@ export default function StudyPage() {
       )}
 
       {!isRunning && timeLeft === 0 && (
-        <button onClick={startCountdown} style={{ backgroundColor: "green", color: "white" }}>{t[language].start}</button>
+        <button className="timer-btn--start" onClick={startCountdown}>{t[language].start}</button>
       )}
       {isRunning && !isPaused && (
-        <button onClick={pauseCountdown} style={{ backgroundColor: "orange", color: "white" }}>{t[language].pause}</button>
+        <button className="timer-btn--pause" onClick={pauseCountdown}>{t[language].pause}</button>
       )}
       {isRunning && isPaused && (
-        <button onClick={resumeCountdown} style={{ backgroundColor: "green", color: "white" }}>{t[language].resume}</button>
+        <button className="timer-btn--resume" onClick={resumeCountdown}>{t[language].resume}</button>
       )}
       {(isRunning || isPaused) && (
-        <button onClick={stopCountdown} style={{ backgroundColor: "red", color: "white", marginLeft: 10 }}>{t[language].stop}</button>
+        <button className="timer-btn--stop" onClick={stopCountdown}>{t[language].stop}</button>
       )}
 
       {!isRunning && timeLeft === 0 && (

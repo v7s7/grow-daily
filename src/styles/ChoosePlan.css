@@ -1,58 +1,81 @@
+/* ChoosePlan.css — aligned to App.css design system */
+
 .choose-plan-wrapper {
   text-align: center;
-  padding: 20px;
-  color: #ffd700; /* gold */
-  background-color: #001f3f; /* dark blue */
-  min-height: 100vh;
+  padding: max(env(safe-area-inset-top, 0px), 20px) 20px 100px;
+  background: #000000;
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  color: #FFFFFF;
 }
 
-h2 {
-  margin-bottom: 20px;
+.choose-plan-wrapper h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFFFFF;
 }
 
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 12px;
   justify-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .plan-option {
-  border: 2px solid #ffd700;
-  border-radius: 10px;
-  padding: 15px;
+  background: #1C1C1E;
+  border: 1.5px solid rgba(84, 84, 88, 0.35);
+  border-radius: 18px;
+  padding: 12px 8px;
   cursor: pointer;
-  width: 120px;
-  height: 150px;
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235, 235, 245, 0.7);
+  gap: 8px;
 }
 
 .plan-option img {
-  width: 50px;
-  height: 50px;
-  margin-bottom: 10px;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 .plan-option.selected {
-  background-color: #ffd700;
-  color: #001f3f;
+  background: rgba(245, 197, 51, 0.12);
+  border-color: #F5C533;
+  color: #F5C533;
 }
 
-.plan-option:hover {
-  transform: scale(1.05);
+.plan-option:active {
+  transform: scale(0.93);
 }
 
 .save-button {
-  background-color: #ffd700;
-  color: #001f3f;
-  padding: 10px 20px;
+  background: #F5C533;
+  color: #000000;
+  padding: 14px 32px;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.save-button:active {
+  transform: scale(0.95);
+  opacity: 0.85;
 }

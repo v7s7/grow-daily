@@ -183,22 +183,22 @@ export default function QuranPage() {
       )}
 
       {!isRunning && timeLeft === 0 && (
-        <button onClick={startCountdown} style={{ backgroundColor: "green", color: "white" }}>
+        <button className="timer-btn--start" onClick={startCountdown}>
           {t[language].start}
         </button>
       )}
       {isRunning && !isPaused && (
-        <button onClick={pauseCountdown} style={{ backgroundColor: "orange", color: "white" }}>
+        <button className="timer-btn--pause" onClick={pauseCountdown}>
           {t[language].pause}
         </button>
       )}
       {isRunning && isPaused && (
-        <button onClick={resumeCountdown} style={{ backgroundColor: "green", color: "white" }}>
+        <button className="timer-btn--resume" onClick={resumeCountdown}>
           {t[language].resume}
         </button>
       )}
       {(isRunning || isPaused) && (
-        <button onClick={stopCountdown} style={{ backgroundColor: "red", color: "white", marginLeft: 10 }}>
+        <button className="timer-btn--stop" onClick={stopCountdown}>
           {t[language].stop}
         </button>
       )}
