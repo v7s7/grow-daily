@@ -1,46 +1,45 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { theme } from '../../theme';
 
 const StyledCard = styled.div`
-  background: ${props => props.transparent ? 'transparent' : theme.colors.background.tertiary};
+  background: ${props => props.$transparent ? 'transparent' : theme.colors.background.secondary};
   border-radius: ${props => {
-    switch(props.rounded) {
-      case 'sm': return theme.borderRadius.base;
-      case 'lg': return theme.borderRadius.xl;
-      default: return theme.borderRadius.lg;
+    switch (props.$rounded) {
+      case 'sm': return theme.borderRadius.md;
+      case 'lg': return theme.borderRadius['2xl'];
+      default:   return theme.borderRadius.xl;
     }
   }};
   padding: ${props => {
-    switch(props.padding) {
-      case 'sm': return theme.spacing[4];
-      case 'lg': return theme.spacing[8];
+    switch (props.$padding) {
+      case 'sm':   return theme.spacing[4];
+      case 'lg':   return theme.spacing[8];
       case 'none': return '0';
-      default: return theme.spacing[6];
+      default:     return theme.spacing[5];
     }
   }};
-  box-shadow: ${props => props.elevated ? theme.shadows.md : theme.shadows.base};
-  transition: all ${theme.transitions.base};
+  border: 1.5px solid rgba(84, 84, 88, 0.3);
+  transition: transform ${theme.transitions.fast}, box-shadow ${theme.transitions.fast};
   box-sizing: border-box;
 
-  ${props => props.clickable && `
+  ${props => props.$elevated && css`
+    background: ${theme.colors.background.tertiary};
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  `}
+
+  ${props => props.$clickable && css`
     cursor: pointer;
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: ${theme.shadows.lg};
-    }
+    -webkit-tap-highlight-color: transparent;
     &:active {
-      transform: translateY(0);
+      transform: scale(0.97);
+      opacity: 0.9;
     }
   `}
 
-  ${props => props.bordered && `
-    border: 2px solid ${theme.colors.background.elevated};
-  `}
-
-  ${props => props.glow && `
-    box-shadow: ${theme.shadows.glow.gold};
-    border: 2px solid ${theme.colors.primary[500]};
+  ${props => props.$glow && css`
+    border-color: rgba(245, 197, 51, 0.45);
+    box-shadow: 0 0 24px rgba(245, 197, 51, 0.2);
   `}
 `;
 
@@ -55,22 +54,20 @@ const Card = ({
   rounded = 'md',
   onClick,
   ...props
-}) => {
-  return (
-    <StyledCard
-      clickable={clickable}
-      elevated={elevated}
-      bordered={bordered}
-      glow={glow}
-      transparent={transparent}
-      padding={padding}
-      rounded={rounded}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </StyledCard>
-  );
-};
+}) => (
+  <StyledCard
+    $clickable={clickable}
+    $elevated={elevated}
+    $bordered={bordered}
+    $glow={glow}
+    $transparent={transparent}
+    $padding={padding}
+    $rounded={rounded}
+    onClick={onClick}
+    {...props}
+  >
+    {children}
+  </StyledCard>
+);
 
 export default Card;

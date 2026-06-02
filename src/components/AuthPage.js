@@ -5,343 +5,304 @@ import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-const AuthPage = () => {
+const Wrapper = styled.div`
+  min-height: 100dvh;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: max(env(safe-area-inset-top, 0px), 24px) 24px max(env(safe-area-inset-bottom, 0px), 24px);
+  box-sizing: border-box;
+`;
+
+const Card = styled.div`
+  width: 100%;
+  max-width: 390px;
+  background: #1C1C1E;
+  border-radius: 24px;
+  padding: 32px 28px;
+  border: 1px solid rgba(84, 84, 88, 0.35);
+`;
+
+const Logo = styled.div`
+  text-align: center;
+  margin-bottom: 28px;
+`;
+
+const LogoTitle = styled.h1`
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin: 0 0 4px;
+  color: #FFFFFF;
+  span { color: #F5C533; }
+`;
+
+const LogoSub = styled.p`
+  font-size: 15px;
+  color: rgba(235, 235, 245, 0.5);
+  margin: 0;
+`;
+
+const FormTitle = styled.h2`
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 24px;
+  text-align: center;
+`;
+
+const Field = styled.div`
+  margin-bottom: 14px;
+`;
+
+const FieldLabel = styled.label`
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235, 235, 245, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 7px;
+`;
+
+const FieldInput = styled.input`
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 17px;
+  font-family: inherit;
+  background: #2C2C2E;
+  color: #FFFFFF;
+  border: 1.5px solid rgba(84, 84, 88, 0.4);
+  border-radius: 12px;
+  box-sizing: border-box;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s ease;
+
+  &::placeholder { color: rgba(235, 235, 245, 0.25); }
+  &:focus { border-color: #F5C533; }
+`;
+
+const SubmitBtn = styled.button`
+  width: 100%;
+  height: 52px;
+  background: #F5C533;
+  color: #000000;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+
+  &:active { transform: scale(0.96); opacity: 0.85; }
+`;
+
+const ErrorMsg = styled.p`
+  font-size: 14px;
+  color: #FF3B30;
+  text-align: center;
+  margin: 0 0 12px;
+  background: rgba(255, 59, 48, 0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+`;
+
+const SwitchRow = styled.div`
+  text-align: center;
+  margin-top: 20px;
+`;
+
+const SwitchText = styled.p`
+  font-size: 15px;
+  color: rgba(235, 235, 245, 0.5);
+  margin: 0;
+`;
+
+const SwitchLink = styled.span`
+  color: #F5C533;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover { opacity: 0.8; }
+`;
+
+const Divider = styled.div`
+  height: 1px;
+  background: rgba(84, 84, 88, 0.45);
+  margin: 24px 0;
+`;
+
+const LangRow = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const LangBtn = styled.button`
+  flex: 1;
+  height: 44px;
+  background: ${props => props.$active ? 'rgba(245, 197, 51, 0.15)' : '#2C2C2E'};
+  color: ${props => props.$active ? '#F5C533' : 'rgba(235, 235, 245, 0.6)'};
+  border: 1.5px solid ${props => props.$active ? 'rgba(245, 197, 51, 0.45)' : 'rgba(84, 84, 88, 0.35)'};
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  margin: 0;
+  padding: 0;
+
+  &:active { transform: scale(0.96); }
+`;
+
+const LangLabel = styled.p`
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235, 235, 245, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  text-align: center;
+  margin: 0 0 12px;
+`;
+
+export default function AuthPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [language, setLanguage] = useState("en");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const navigate = useNavigate();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const t = {
     en: {
-      title: isRegistering ? "Register" : "Login",
-      email: "Email :",
-      password: "Password :",
-      name: "Your Name :",
-      switch: isRegistering ? "Already have an account? Login" : "Don't have an account? Register",
-      submit: isRegistering ? "Sign Up" : "Sign In",
+      login: "Sign In", register: "Create Account",
+      email: "Email", password: "Password", name: "Your Name",
+      submit_login: "Sign In", submit_register: "Create Account",
+      switch_to_register: "Don't have an account?",
+      switch_to_login: "Already have an account?",
+      register_link: "Create one", login_link: "Sign in",
+      lang_label: "Language",
     },
     ar: {
-      title: isRegistering ? "تسجيل حساب" : "تسجيل دخول",
-      email: "البريد الإلكتروني",
-      password: "كلمة المرور",
-      name: "اسمك :",
-      switch: isRegistering ? "هل لديك حساب؟ تسجيل الدخول" : "ليس لديك حساب؟ إنشاء حساب",
-      submit: isRegistering ? "إنشاء" : "دخول",
+      login: "تسجيل الدخول", register: "إنشاء حساب",
+      email: "البريد الإلكتروني", password: "كلمة المرور", name: "الاسم",
+      submit_login: "دخول", submit_register: "إنشاء حساب",
+      switch_to_register: "ليس لديك حساب؟",
+      switch_to_login: "هل لديك حساب؟",
+      register_link: "أنشئ حساباً", login_link: "سجل الدخول",
+      lang_label: "اللغة",
     },
   };
 
   const handleAuth = async () => {
-    setError(""); // Clear old error first
-
-    if (!email.trim()) {
-      setError(language === "ar" ? "يرجى إدخال البريد الإلكتروني" : "Please enter your email");
-      return;
-    }
-    
-    if (!password) {
-      setError(language === "ar" ? "يرجى إدخال كلمة المرور" : "Please enter your password");
-      return;
-    }
-    
-    if (isRegistering && password.length < 6) {
-      setError(language === "ar"
-        ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
-        : "Password must be at least 6 characters");
-      return;
-    }
-    
-    if (isRegistering && !name.trim()) {
-      setError(language === "ar" ? "يرجى إدخال الاسم" : "Please enter your name");
-      return;
-    }
-    
-  
+    setError("");
+    if (!email.trim()) { setError(language === "ar" ? "يرجى إدخال البريد الإلكتروني" : "Please enter your email"); return; }
+    if (!password) { setError(language === "ar" ? "يرجى إدخال كلمة المرور" : "Please enter your password"); return; }
+    if (isRegistering && password.length < 6) { setError(language === "ar" ? "كلمة المرور 6 أحرف على الأقل" : "Password must be at least 6 characters"); return; }
+    if (isRegistering && !name.trim()) { setError(language === "ar" ? "يرجى إدخال الاسم" : "Please enter your name"); return; }
     try {
       if (isRegistering) {
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCred.user, { displayName: name });
-        await setDoc(doc(db, "users", userCred.user.uid), {
-          name: name,
-          email: email,
-        });
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: name });
+        await setDoc(doc(db, "users", cred.user.uid), { name, email });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-  
       navigate("/home");
-  
     } catch (err) {
-      const msg = err.code;
-    
-      if (msg === "auth/invalid-email") {
-        setError(language === "ar" ? "البريد الإلكتروني غير صالح" : "Invalid email address");
-      } else if (msg === "auth/email-already-in-use") {
-        setError(language === "ar" ? "البريد الإلكتروني مستخدم بالفعل" : "Email is already in use");
-      } else if (msg === "auth/user-not-found" || msg === "auth/wrong-password") {
-        setError(language === "ar" ? "البريد الإلكتروني أو كلمة المرور غير صحيحة" : "Incorrect email or password");
-      } else {
-        setError(err.message); // fallback to Firebase message
-      }
+      const code = err.code;
+      if (code === "auth/invalid-email") setError(language === "ar" ? "البريد الإلكتروني غير صالح" : "Invalid email address");
+      else if (code === "auth/email-already-in-use") setError(language === "ar" ? "البريد مستخدم بالفعل" : "Email is already in use");
+      else if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") setError(language === "ar" ? "البريد أو كلمة المرور غير صحيحة" : "Incorrect email or password");
+      else setError(err.message);
     }
-    
   };
-  
+
+  const handleKeyDown = (e) => { if (e.key === "Enter") handleAuth(); };
+
   return (
-    <StyledWrapper>
-      <div className="form-container">
-      <div
-  className="auth-page-container"
-  dir={language === "ar" ? "rtl" : "ltr"} // ✅ this makes the CSS selector [dir="rtl"] work!
->
-          <div style={{ padding: 10, textAlign: "center" }}>
-            <h2 className="auth-title">{t[language].title}</h2>
+    <Wrapper dir={language === "ar" ? "rtl" : "ltr"}>
+      <Logo>
+        <LogoTitle>Grow<span>Daily</span></LogoTitle>
+        <LogoSub>{language === "ar" ? "بنِ عادات تدوم" : "Build habits that last"}</LogoSub>
+      </Logo>
 
-            {isRegistering && (
-              <FormControl label={t[language].name} value={name} setValue={setName} language={language} />
-            )}
-            <FormControl label={t[language].email} value={email} setValue={setEmail} type="email" language={language} />
-            <FormControl label={t[language].password} value={password} setValue={setPassword} type="password" language={language} />
-            {error && (
-  <p
-    style={{
-      color: "red",
-      fontSize: "13px",
-      marginBottom: "10px",
-      fontFamily: language === "ar" ? "'Cairo', sans-serif" : "'Poppins', sans-serif",
-    }}
-  >
-    {error}
-  </p>
-)}
+      <Card>
+        <FormTitle>{isRegistering ? t[language].register : t[language].login}</FormTitle>
 
-            <div className="button-center">
-              <button onClick={handleAuth}>{t[language].submit}</button>
-            </div>
+        {isRegistering && (
+          <Field>
+            <FieldLabel>{t[language].name}</FieldLabel>
+            <FieldInput
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={language === "ar" ? "اسمك الكريم" : "Your full name"}
+              autoComplete="name"
+            />
+          </Field>
+        )}
 
-            <p
-  onClick={() => setIsRegistering(!isRegistering)}
-  style={{
-    cursor: "pointer",
-    color: "#f8cc6a",
-    fontSize: language === "ar" ? "17px" : "14px",
-  }}
->
-  {language === "en"
-    ? isRegistering
-      ? "Already have an account? "
-      : "Don't have an account? "
-    : isRegistering
-    ? "هل لديك حساب؟ "
-    : "ليس لديك حساب؟ "}
-  <span style={{ textDecoration: "underline" }}>
-    {language === "en"
-      ? isRegistering
-        ? "Login"
-        : "Register"
-      : isRegistering
-      ? "تسجيل الدخول"
-      : "إنشاء حساب"}
-  </span>
-</p>
+        <Field>
+          <FieldLabel>{t[language].email}</FieldLabel>
+          <FieldInput
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={language === "ar" ? "example@email.com" : "example@email.com"}
+            autoComplete="email"
+            inputMode="email"
+          />
+        </Field>
 
+        <Field>
+          <FieldLabel>{t[language].password}</FieldLabel>
+          <FieldInput
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={language === "ar" ? "••••••••" : "••••••••"}
+            autoComplete={isRegistering ? "new-password" : "current-password"}
+          />
+        </Field>
 
+        {error && <ErrorMsg>{error}</ErrorMsg>}
 
-            <hr />
+        <SubmitBtn onClick={handleAuth}>
+          {isRegistering ? t[language].submit_register : t[language].submit_login}
+        </SubmitBtn>
 
-            <p>{language === "en" ? "Choose Language" : "اختر اللغة"}</p>
-            <div className="lang-buttons">
-  <button
-    onClick={() => setLanguage("en")}
-    style={{
-      fontFamily: language === "ar" ? "'Cairo', sans-serif" : "'Poppins', sans-serif"
-    }}
-  >
-    English
-  </button>
-  <button
-    onClick={() => setLanguage("ar")}
-    style={{
-      fontFamily: language === "ar" ? "'Cairo', sans-serif" : "'Poppins', sans-serif"
-    }}
-  >
-    العربية
-  </button>
-</div>
+        <SwitchRow>
+          <SwitchText>
+            {isRegistering ? t[language].switch_to_login : t[language].switch_to_register}{" "}
+            <SwitchLink onClick={() => { setIsRegistering(!isRegistering); setError(""); }}>
+              {isRegistering ? t[language].login_link : t[language].register_link}
+            </SwitchLink>
+          </SwitchText>
+        </SwitchRow>
 
-          </div>
-        </div>
-      </div>
-    </StyledWrapper>
+        <Divider />
+
+        <LangLabel>{t[language].lang_label}</LangLabel>
+        <LangRow>
+          <LangBtn $active={language === "en"} onClick={() => setLanguage("en")}>English</LangBtn>
+          <LangBtn $active={language === "ar"} onClick={() => setLanguage("ar")}>العربية</LangBtn>
+        </LangRow>
+      </Card>
+    </Wrapper>
   );
-};
-
-const FormControl = ({ label, value, setValue, type = "text", language }) => (
-  <div className="form-control">
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      required
-    />
-    <label>
-      {language === "ar"
-        ? <span>{label}</span>
-        : label.split("").map((letter, i) => (
-            <span key={i} style={{ transitionDelay: `${i * 50}ms` }}>
-              {letter}
-            </span>
-          ))}
-    </label>
-  </div>
-);
-
-/* Wrapper for the whole container */
-const StyledWrapper = styled.div`
-    .auth-page-container {
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 40px 30px;
-      background-color: #10172a;
-      border-radius: 12px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      color: white;
-      text-align: center;
-      width: 100%;  /* Make it fully responsive on small screens */
-    }
-
-    .form-control {
-      position: relative;
-      margin: 4px 0;
-      width: 100%;
-      max-width: 240px;
-    }
-
-    .form-control input {
-      font-family: 'Poppins', sans-serif;
-      background-color: transparent;
-      border: 0;
-      border-bottom: 2px solid #f8cc6a;
-      display: block;
-      width: 100%;
-      padding: 8px 0;
-      font-size: 14px;
-      color: white;
-      margin: 0;
-      text-align: left;
-    }
-
-    .auth-page-container[dir="rtl"] .form-control input {
-      text-align: right;
-    }
-
-    .auth-page-container[dir="rtl"] .form-control label {
-      left: auto;
-      right: 0;
-      text-align: right;
-    }
-
-    .form-control input:focus,
-    .form-control input:valid {
-      outline: 0;
-      border-bottom-color: lightblue;
-    }
-
-    .form-control label {
-      position: absolute;
-      top: 6px;
-      left: 0;
-      pointer-events: none;
-    }
-
-    .form-control label span {
-      display: inline-block;
-      font-size: 14px;
-      min-width: 5px;
-      color: #fff;
-      transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-
-    .form-control input:focus + label span,
-    .form-control input:valid + label span {
-      color: lightblue;
-      transform: translateY(-20px);
-    }
-
-    .auth-page-container p {
-      font-family: 'Poppins', sans-serif;
-      font-size: 14px;
-      color: #f8cc6a;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    .auth-page-container[dir="rtl"] p {
-      font-size: 16px !important;
-      font-family: 'Cairo', sans-serif !important;
-      font-weight: bold;
-    }
-
-    .button-center button {
-      color: #10172a;
-      padding: 0.5em 2em;
-      font-size: 18px;
-      border-radius: 0.5em;
-      background: #f8cc6a;
-      cursor: pointer;
-      border: 1px solid #f8cc6a;
-      transition: all 0.3s;
-      box-shadow: 2px 2px 8px #f8cc6a, -2px -2px 8px #f8cc6a;
-      font-weight: bold;
-    }
-
-    .auth-page-container[dir="rtl"] .button-center button {
-      font-size: 15px;
-      padding: 0.4em 2.7em;
-      font-family: 'Cairo', sans-serif !important;
-    }
-
-    .button-center button:active {
-      color: #666;
-      box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
-    }
-
-    .button-center button:hover {
-      background-color: #ffdd88;
-    }
-
-    .lang-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .lang-buttons button {
-      color: #10172a;
-      padding: 0.7em 1.7em;
-      font-size: 16px;
-      border-radius: 0.5em;
-      background: #f8cc6a;
-      cursor: pointer;
-      border: 1px solid #f8cc6a;
-      transition: all 0.3s;
-      box-shadow: 2px 2px 8px #f8cc6a, -2px -2px 8px #f8cc6a;
-      font-weight: bold;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .auth-page-container[dir="rtl"] .lang-buttons button {
-      font-family: 'Cairo', sans-serif !important;
-    }
-
-    .lang-buttons button:hover {
-      background-color: #ffdd88;
-    }
-
-`;
-
-
-export default AuthPage;
+}

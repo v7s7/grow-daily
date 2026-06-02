@@ -1,16 +1,15 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
 import './App.css';
 
-// Eager load critical components
 import AuthPage from "./components/AuthPage";
 import HomePage from "./components/HomePage";
 import GlobalTimerWatcher from "./components/GlobalTimerWatcher";
+import NavBar from "./components/NavBar";
 
-// Lazy load non-critical routes
 const SettingsPage = lazy(() => import("./components/SettingsPage"));
 const InsightsPage = lazy(() => import("./components/InsightsPage"));
 const CalendarPage = lazy(() => import("./components/CalendarPage"));
@@ -18,7 +17,6 @@ const ToDoList = lazy(() => import("./components/ToDoList"));
 const EisenhowerToDo = lazy(() => import("./components/EisenhowerToDo"));
 const ChoosePlan = lazy(() => import("./components/ChoosePlan"));
 
-// Task pages
 const QuranPage = lazy(() => import("./components/tasks/QuranPage"));
 const StudyPage = lazy(() => import("./components/tasks/StudyPage"));
 const GymPage = lazy(() => import("./components/tasks/GymPage"));
@@ -31,12 +29,20 @@ const MasaaAthkarPage = lazy(() => import("./components/tasks/MasaaAthkarPage"))
 const ShowerTaskPage = lazy(() => import("./components/tasks/ShowerTaskPage"));
 const AquariumPage = lazy(() => import("./components/AquariumPage"));
 
-// Loading component
 const LoadingFallback = () => (
   <div className="loading-screen">
-    <h1 className="fade-in">Loading...</h1>
+    <h1 className="fade-in">GrowDaily</h1>
   </div>
 );
+
+const NAV_HIDDEN_PATHS = ['/', '/auth', '/choose-plan'];
+
+function AppNavBar({ user, needsPlan }) {
+  const location = useLocation();
+  const language = localStorage.getItem("lang") || "en";
+  if (!user || needsPlan || NAV_HIDDEN_PATHS.includes(location.pathname)) return null;
+  return <NavBar language={language} />;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -50,28 +56,22 @@ function App() {
         try {
           const userRef = doc(db, "users", currentUser.uid);
           const userSnap = await getDoc(userRef);
-          if (!userSnap.exists() || !userSnap.data().plan) {
-            setNeedsPlan(true); // No plan, redirect needed
-          } else {
-            setNeedsPlan(false); // Plan exists
-          }
-        } catch (error) {
-          console.error("Error checking user plan:", error);
-          setNeedsPlan(true); // Safe default
+          setNeedsPlan(!userSnap.exists() || !userSnap.data().plan);
+        } catch {
+          setNeedsPlan(true);
         }
       } else {
         setNeedsPlan(false);
       }
       setChecking(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   if (checking) {
     return (
       <div className="loading-screen">
-        <h1 className="fade-in">Ready to GrowDaily?</h1>
+        <h1 className="fade-in">GrowDaily</h1>
       </div>
     );
   }
@@ -80,13 +80,11 @@ function App() {
     <div>
       <GlobalTimerWatcher />
       <Router>
+        <AppNavBar user={user} needsPlan={needsPlan} />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={user ? <Navigate to={needsPlan ? "/choose-plan" : "/home"} /> : <AuthPage />} />
             <Route path="/auth" element={user ? <Navigate to={needsPlan ? "/choose-plan" : "/home"} /> : <AuthPage />} />
-
-            {/* Protected Routes */}
             <Route path="/home" element={user ? (needsPlan ? <Navigate to="/choose-plan" /> : <HomePage />) : <Navigate to="/auth" />} />
             <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
             <Route path="/insights" element={user ? <InsightsPage /> : <Navigate to="/auth" />} />
