@@ -1,70 +1,60 @@
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { checkAndPersistAchievements } from "./progressionSystem";
 
+/**
+ * Writes task-completion points to:
+ *   - users/{uid}/daily/{today}  — task points + completedTasks array
+ *   - users/{uid}                — availablePoints + totalTasksCompleted counter
+ *
+ * Enforces:
+ *   - 75-point daily cap across all tasks
+ *   - Per-task maxPerTask cap
+ *   - Zero points for 3rd+ same-day submissions
+ */
 export const updatePoints = async ({
   db,
   userId,
-  firestoreData,
+  dailyData,       // today's daily sub-doc snapshot data (pre-write)
+  userData,        // root user doc snapshot data (pre-write)
   taskName,
   today,
   rawPoints,
-  previousPoints = 0,
+  previousPoints,
   maxPerTask = Infinity,
-  repeatCount = 0
+  repeatCount = 0,
 }) => {
-  const availablePoints = firestoreData.availablePoints || 0;
+  const dailyRef = doc(db, "users", userId, "daily", today);
+  const userRef = doc(db, "users", userId);
 
-  // ✅ Recalculate total points earned today from all `*Points` fields
-  const totalEarned = Object.entries(firestoreData)
-    .filter(([key]) => key.endsWith("Points"))
-    .map(([_, val]) => val?.[today] || 0)
-    .reduce((sum, v) => sum + v, 0);
+  const currentDailyPoints = dailyData.totalPoints || 0;
+  const availablePoints = userData.availablePoints || 0;
 
-  const currentDailyPoints = Math.max(
-    totalEarned,
-    firestoreData.dailyPointsEarned?.[today] || 0
-  );
-
-  // ✅ Block 3rd+ submissions
   if (repeatCount > 1) rawPoints = 0;
 
-  // ✅ Cap per task and per day
   const cappedRaw = Math.min(rawPoints, maxPerTask - previousPoints);
   let pointsToAdd = Math.min(75 - currentDailyPoints, cappedRaw);
   pointsToAdd = Math.max(0, pointsToAdd);
 
-  const newTotal = availablePoints + pointsToAdd;
+  const newAvailable = availablePoints + pointsToAdd;
+  const isFirstCompletion = !(dailyData.completedTasks || []).includes(taskName);
 
-  await setDoc(
-    doc(db, "users", userId),
-    {
-      completedTasks: {
-        ...(firestoreData.completedTasks || {}),
-        [today]: [
-          ...new Set([...(firestoreData.completedTasks?.[today] || []), taskName])
-        ]
-      },
-      [`${taskName}Points`]: {
-        ...(firestoreData[`${taskName}Points`] || {}),
-        [today]: previousPoints + pointsToAdd
-      },
-      availablePoints: newTotal,
-      dailyPointsEarned: {
-        ...(firestoreData.dailyPointsEarned || {}),
-        [today]: currentDailyPoints + pointsToAdd
-      },
-      dailySubmissions: {
-        ...(firestoreData.dailySubmissions || {}),
-        [today]: (firestoreData.dailySubmissions?.[today] || 0) + 1
-      }
-    },
-    { merge: true }
-  );
+  await setDoc(dailyRef, {
+    completedTasks: [...new Set([...(dailyData.completedTasks || []), taskName])],
+    [`${taskName}Points`]: previousPoints + pointsToAdd,
+    totalPoints: currentDailyPoints + pointsToAdd,
+    submissions: (dailyData.submissions || 0) + 1,
+  }, { merge: true });
 
-  localStorage.setItem("availablePoints", newTotal);
+  const rootUpdate = { availablePoints: newAvailable };
+  if (isFirstCompletion) {
+    rootUpdate.totalTasksCompleted = (userData.totalTasksCompleted || 0) + 1;
+  }
+  await setDoc(userRef, rootUpdate, { merge: true });
 
-  const updatedSnap = await getDoc(doc(db, "users", userId));
-  if (updatedSnap.exists()) {
-    await checkAndPersistAchievements(db, userId, updatedSnap.data());
+  localStorage.setItem("availablePoints", newAvailable);
+
+  const freshRoot = await getDoc(userRef);
+  if (freshRoot.exists()) {
+    await checkAndPersistAchievements(db, userId, freshRoot.data());
   }
 };

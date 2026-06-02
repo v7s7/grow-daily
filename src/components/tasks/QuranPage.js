@@ -2,15 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import FancyRating from "../FancyRating";
-import { auth, db } from "../../firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useTaskSubmission } from "../../hooks/useTaskSubmission";
 import { taskPoints } from "../../utils/constants";
-import { updatePoints } from "../../utils/updatePoints";
-import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function QuranPage() {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState(localStorage.getItem("lang") || "en");
+  const language = localStorage.getItem("lang") || "en";
   const [selectedMinutes, setSelectedMinutes] = useState(5);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -18,7 +15,10 @@ export default function QuranPage() {
   const [pages, setPages] = useState("");
   const [rating, setRating] = useState(0);
   const [surah, setSurah] = useState("");
-  const [error, setError] = useState("");
+  const [validationError, setValidationError] = useState("");
+
+  const { submit, isSubmitting, submissionError } = useTaskSubmission();
+
   const totalTime = selectedMinutes * 60;
   const percentage = ((totalTime - timeLeft) / totalTime) * 100;
 
@@ -26,26 +26,20 @@ export default function QuranPage() {
     en: {
       title: "Quran Focus Mode",
       chooseTime: "Choose Focus Time (minutes)",
-      countdown: "Time Left",
-      start: "Start",
-      pause: "Pause",
-      resume: "Resume",
-      stop: "Stop",
+      start: "Start", pause: "Pause", resume: "Resume", stop: "Stop",
       pages: "Pages Read",
       rating: "Focus Rating (1–5, optional)",
       submit: "Submit",
+      back: "Back to Home",
     },
     ar: {
       title: "وضع التركيز - القرآن",
       chooseTime: "اختر مدة التركيز (بالدقائق)",
-      countdown: "الوقت المتبقي",
-      start: "ابدأ",
-      pause: "إيقاف مؤقت",
-      resume: "استئناف",
-      stop: "إيقاف",
+      start: "ابدأ", pause: "إيقاف مؤقت", resume: "استئناف", stop: "إيقاف",
       pages: "عدد الصفحات المقروءة",
       rating: "تقييم التركيز (من 1 إلى 5 , اختياري)",
       submit: "إرسال",
+      back: "العودة للرئيسية",
     },
   };
 
@@ -74,22 +68,15 @@ export default function QuranPage() {
     const tick = () => {
       const saved = JSON.parse(localStorage.getItem("quran_timer") || "{}");
       if (!saved.startTime || !saved.duration || !saved.isRunning) return;
-
-      const now = Date.now();
-      const elapsed = Math.floor((now - saved.startTime) / 1000);
+      const elapsed = Math.floor((Date.now() - saved.startTime) / 1000);
       const remaining = saved.duration - elapsed;
-
       if (remaining <= 0) {
         setTimeLeft(0);
         setIsRunning(false);
         setIsPaused(false);
         localStorage.removeItem("quran_timer");
-
         if (Notification.permission === "granted") {
-          new Notification("⏱ Time's up!", {
-            body: "Great job staying focused! 🌟",
-            icon: "/favicon.ico",
-          });
+          new Notification("⏱ Time's up!", { body: "Great job staying focused! 🌟", icon: "/favicon.ico" });
         } else {
           alert("⏱ Time's up! Great job staying focused! 🌟");
         }
@@ -97,7 +84,6 @@ export default function QuranPage() {
         setTimeLeft(remaining);
       }
     };
-
     if (isRunning && !isPaused) {
       tick();
       const interval = setInterval(tick, 1000);
@@ -105,23 +91,14 @@ export default function QuranPage() {
     }
   }, [isRunning, isPaused]);
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  };
+  const formatTime = (s) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const startCountdown = () => {
     const duration = selectedMinutes * 60;
-    const startTime = Date.now();
-    const state = {
-      timeLeft: duration,
-      duration,
-      startTime,
-      isRunning: true,
-      isPaused: false,
-    };
-    localStorage.setItem("quran_timer", JSON.stringify(state));
+    localStorage.setItem("quran_timer", JSON.stringify({
+      timeLeft: duration, duration, startTime: Date.now(), isRunning: true, isPaused: false,
+    }));
     setTimeLeft(duration);
     setIsRunning(true);
     setIsPaused(false);
@@ -130,16 +107,16 @@ export default function QuranPage() {
   const pauseCountdown = () => {
     setIsPaused(true);
     const saved = JSON.parse(localStorage.getItem("quran_timer") || "{}");
-    saved.isPaused = true;
-    localStorage.setItem("quran_timer", JSON.stringify(saved));
+    localStorage.setItem("quran_timer", JSON.stringify({ ...saved, isPaused: true }));
   };
 
   const resumeCountdown = () => {
     setIsPaused(false);
     const saved = JSON.parse(localStorage.getItem("quran_timer") || "{}");
-    saved.isPaused = false;
-    saved.startTime = Date.now() - (saved.duration - timeLeft) * 1000;
-    localStorage.setItem("quran_timer", JSON.stringify(saved));
+    localStorage.setItem("quran_timer", JSON.stringify({
+      ...saved, isPaused: false,
+      startTime: Date.now() - (saved.duration - timeLeft) * 1000,
+    }));
   };
 
   const stopCountdown = () => {
@@ -151,79 +128,29 @@ export default function QuranPage() {
 
   const handleSubmit = async () => {
     if (rating === 0 || ((pages === "" || pages === "0") && surah.trim() === "")) {
-      setError(language === "ar"
+      setValidationError(language === "ar"
         ? "يرجى إدخال الصفحات أو السورة مع تقييم التركيز"
         : "Please enter pages or surah name and choose a focus rating");
       return;
     }
+    setValidationError("");
 
-    const today = getLocalDateStr();
-    const taskName = "quran";
-
-    const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
-    completed[today] = completed[today] || [];
-    if (!completed[today].includes(taskName)) {
-      completed[today].push(taskName);
-      localStorage.setItem("completedTasks", JSON.stringify(completed));
-    }
-
-    const user = auth.currentUser;
-    if (user) {
-      const userRef = doc(db, "users", user.uid);
-      const snapshot = await getDoc(userRef);
-      const firestoreData = snapshot.exists() ? snapshot.data() : {};
-
-      const repeatKey = `${taskName}_repeat`;
-      const repeatCount = firestoreData.taskRepeats?.[today]?.[repeatKey] || 0;
-      const previousPoints = firestoreData.quranPoints?.[today] || 0;
-      const maxPerTask = 15;
-      const basePoints = taskPoints[taskName] || 15;
-
-      // Save reading data
-      await setDoc(userRef, {
-        quran: {
-          ...(firestoreData.quran || {}),
-          [today]: {
-            pages: Number(pages),
-            surah: surah.trim(),
-            rating
-          }
-        },
-        taskRepeats: {
-          ...(firestoreData.taskRepeats || {}),
-          [today]: {
-            ...(firestoreData.taskRepeats?.[today] || {}),
-            [repeatKey]: repeatCount + 1
-          }
-        }
-      }, { merge: true });
-
-      // Calculate raw points
-      let rawPoints = 0;
-      if (repeatCount === 0) {
-        rawPoints = basePoints;
-      } else if (repeatCount === 1) {
-        rawPoints = Math.round(basePoints / 2);
-      }
-      const ratingBoost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
-      rawPoints = Math.round(rawPoints * ratingBoost);
-
-      await updatePoints({
-        db,
-        userId: user.uid,
-        firestoreData,
-        taskName,
-        today,
-        rawPoints,
-        previousPoints,
-        maxPerTask,
-        repeatCount
-      });
-    }
-
-    setError("");
-    navigate("/home");
+    await submit({
+      taskName: "quran",
+      maxPerTask: 15,
+      basePoints: taskPoints.quran || 15,
+      getExtraData: () => ({
+        quran: { pages: Number(pages), surah: surah.trim(), rating },
+      }),
+      getRawPoints: ({ repeatCount, basePoints }) => {
+        let raw = repeatCount === 0 ? basePoints : repeatCount === 1 ? Math.round(basePoints / 2) : 0;
+        const boost = rating >= 4 ? 1.5 : rating >= 2 ? 1.2 : 1;
+        return Math.round(raw * boost);
+      },
+    });
   };
+
+  const error = validationError || submissionError;
 
   return (
     <div className="task-page-container" style={{ direction: language === "ar" ? "rtl" : "ltr", padding: 20 }}>
@@ -245,12 +172,7 @@ export default function QuranPage() {
           <svg width="120" height="120">
             <circle cx="60" cy="60" r="50" stroke="#ccc" strokeWidth="10" fill="none" />
             <circle
-              cx="60"
-              cy="60"
-              r="50"
-              stroke="#f8cc6a"
-              strokeWidth="10"
-              fill="none"
+              cx="60" cy="60" r="50" stroke="#f8cc6a" strokeWidth="10" fill="none"
               strokeDasharray={314}
               strokeDashoffset={314 - (314 * percentage) / 100}
               transform="rotate(-90 60 60)"
@@ -299,12 +221,11 @@ export default function QuranPage() {
               {error}
             </p>
           )}
-
           <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "16px" }}>
-            <button onClick={handleSubmit}>{t[language].submit}</button>
-            <button onClick={() => navigate("/home")}>
-              {t[language]?.back || "Back to Home"}
+            <button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "…" : t[language].submit}
             </button>
+            <button onClick={() => navigate("/home")}>{t[language].back}</button>
           </div>
         </>
       )}

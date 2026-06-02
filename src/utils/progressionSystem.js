@@ -1,3 +1,5 @@
+import { doc, setDoc } from "firebase/firestore";
+
 /**
  * GrowDaily Progression System
  * Levels, XP, Achievements, and Gamification
@@ -242,14 +244,13 @@ export const checkAchievements = (stats, unlockedAchievements = []) => {
   return newlyUnlocked;
 };
 
-// Check achievements and persist any newly unlocked ones to Firestore
-export const checkAndPersistAchievements = async (db, userId, firestoreData) => {
-  const { doc, setDoc } = await import("firebase/firestore");
-  const stats = calculateUserStats(firestoreData);
-  const alreadyUnlocked = firestoreData.unlockedAchievements || [];
+// Check achievements and write newly unlocked ones to Firestore
+export const checkAndPersistAchievements = async (db, userId, rootData) => {
+  const stats = calculateUserStats(rootData);
+  const alreadyUnlocked = rootData.unlockedAchievements || [];
   const newlyUnlocked = checkAchievements(stats, alreadyUnlocked);
   if (newlyUnlocked.length === 0) return [];
-  const updatedList = [...alreadyUnlocked, ...newlyUnlocked.map(a => a.id)];
+  const updatedList = [...alreadyUnlocked, ...newlyUnlocked.map((a) => a.id)];
   await setDoc(doc(db, "users", userId), { unlockedAchievements: updatedList }, { merge: true });
   return newlyUnlocked;
 };
@@ -270,43 +271,23 @@ export const getRankTitle = (level) => {
   return { title: 'Beginner', icon: '🌱', color: '#cbd5e1' };
 };
 
-// Calculate user statistics from Firestore data
-export const calculateUserStats = (userData) => {
-  const completedTasks = userData.completedTasks || {};
-  const taskCounts = {};
-  let totalTasksCompleted = 0;
-  let perfectDays = 0;
-  let earlyCompletions = 0;
-  let lateCompletions = 0;
-
-  // Count tasks
-  Object.entries(completedTasks).forEach(([date, tasks]) => {
-    tasks.forEach(task => {
-      taskCounts[task] = (taskCounts[task] || 0) + 1;
-      totalTasksCompleted++;
-    });
-
-    // Check if perfect day (all tasks from plan completed)
-    const plan = userData.plan || [];
-    if (plan.length > 0 && tasks.length === plan.length) {
-      perfectDays++;
-    }
-  });
-
-  return {
-    totalTasksCompleted,
-    taskCounts,
-    perfectDays,
-    perfectWeeks: Math.floor(perfectDays / 7),
-    perfectMonths: Math.floor(perfectDays / 30),
-    bestStreak: userData.bestStreak || userData.streak || 0,
-    currentStreak: userData.streak || 0,
-    totalPoints: userData.totalPoints || 0,
-    earlyCompletions: userData.earlyCompletions || 0,
-    lateCompletions: userData.lateCompletions || 0,
-    streakRebuilds: userData.streakRebuilds || 0,
-  };
-};
+// Derives achievement-check stats from the root user document.
+// Cumulative counters (totalTasksCompleted, bestStreak, etc.) live on the
+// root doc; per-day task breakdowns live in the daily sub-collection and
+// are NOT fetched here to keep this path cheap.
+export const calculateUserStats = (rootData) => ({
+  totalTasksCompleted: rootData.totalTasksCompleted || 0,
+  taskCounts: {},
+  perfectDays: 0,
+  perfectWeeks: 0,
+  perfectMonths: 0,
+  bestStreak: rootData.bestStreak || rootData.streak || 0,
+  currentStreak: rootData.streak || 0,
+  totalPoints: rootData.availablePoints || 0,
+  earlyCompletions: rootData.earlyCompletions || 0,
+  lateCompletions: rootData.lateCompletions || 0,
+  streakRebuilds: rootData.streakRebuilds || 0,
+});
 
 export default {
   calculateXP,
