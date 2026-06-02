@@ -4,6 +4,7 @@ import { auth } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import { getLocalDateStr, getYesterdayStr, getNextMidnight } from "../utils/dateUtils";
 
 const RING_R = 50;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
@@ -23,7 +24,7 @@ export default function HomePage() {
     JSON.parse(localStorage.getItem("tasks") || '["quran","gym","study","water","sleep","phone","athkar","shower"]')
   );
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateStr();
   const [completedTasks, setCompletedTasks] = useState([]);
   const [streak, setStreak] = useState(0);
   const [dailyQuote, setDailyQuote] = useState("");
@@ -131,8 +132,8 @@ export default function HomePage() {
     if (!userId) return;
     const runMidnightCheck = async () => {
       const now = new Date();
-      const todayStr = now.toLocaleDateString("en-CA");
-      const yesterday = new Date(now.getTime() - 86400000).toLocaleDateString("en-CA");
+      const todayStr = getLocalDateStr(now);
+      const yesterday = getYesterdayStr(now);
       const lastDate = localStorage.getItem("lastStreakDate");
       const allTasksCompleted = completedCount === totalTasks;
       const updateFirestore = async (updatedStreak) => {
@@ -155,16 +156,14 @@ export default function HomePage() {
       }
     };
     const now = new Date();
-    const nextMidnight = new Date();
-    nextMidnight.setHours(0, 1, 0, 0);
-    if (nextMidnight <= now) nextMidnight.setDate(nextMidnight.getDate() + 1);
+    const nextMidnight = getNextMidnight(now);
     const timer = setTimeout(runMidnightCheck, nextMidnight.getTime() - now.getTime());
     return () => clearTimeout(timer);
   }, [completedCount, totalTasks, userId]);
 
   useEffect(() => {
     const lastQuoteDate = localStorage.getItem("lastQuoteDate");
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateStr();
     if (lastQuoteDate !== todayStr) {
       const quotes = streak > 0 ? activeStreakQuotes : startStreakQuotes;
       const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];

@@ -6,6 +6,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
 import './ShowerTaskPage.css';
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function ShowerTaskPage() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function ShowerTaskPage() {
   const language = localStorage.getItem("lang") || "en";
 
   const handleShowerCompletion = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "shower";
   
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

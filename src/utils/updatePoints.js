@@ -1,4 +1,5 @@
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { checkAndPersistAchievements } from "./progressionSystem";
 
 export const updatePoints = async ({
   db,
@@ -61,4 +62,9 @@ export const updatePoints = async ({
   );
 
   localStorage.setItem("availablePoints", newTotal);
+
+  const updatedSnap = await getDoc(doc(db, "users", userId));
+  if (updatedSnap.exists()) {
+    await checkAndPersistAchievements(db, userId, updatedSnap.data());
+  }
 };

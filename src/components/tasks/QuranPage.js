@@ -6,6 +6,7 @@ import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function QuranPage() {
   const navigate = useNavigate();
@@ -156,7 +157,7 @@ export default function QuranPage() {
       return;
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "quran";
 
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

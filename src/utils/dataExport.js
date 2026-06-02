@@ -5,6 +5,7 @@
 
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
+import { getLocalDateStr } from './dateUtils';
 
 // Export user data as JSON
 export const exportUserData = async () => {
@@ -53,7 +54,7 @@ export const downloadDataAsJSON = async () => {
 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = getLocalDateStr();
     link.href = url;
     link.download = `growdaily-backup-${timestamp}.json`;
     document.body.appendChild(link);
@@ -94,7 +95,7 @@ export const downloadDataAsCSV = async () => {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = getLocalDateStr();
     link.href = url;
     link.download = `growdaily-tasks-${timestamp}.csv`;
     document.body.appendChild(link);

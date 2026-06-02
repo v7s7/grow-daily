@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function SabahAthkarPage() {
   const type = "sabah";
@@ -18,7 +19,7 @@ export default function SabahAthkarPage() {
   const now = new Date();
   const bahrainTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bahrain" }));
   const currentHour = bahrainTime.getHours();
-  const currentDateStr = bahrainTime.toISOString().split("T")[0];
+  const currentDateStr = getLocalDateStr(bahrainTime);
 
   const lastCompletedDate = Object.keys(completedTasks).find(date =>
     completedTasks[date]?.includes(taskName)
@@ -87,7 +88,7 @@ export default function SabahAthkarPage() {
   };
 
   const handleSubmit = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "sabah_athkar";
 
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

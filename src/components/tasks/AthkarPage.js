@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import "../../styles/AthkarPage.css";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function AthkarPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function AthkarPage() {
     },
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateStr();
   const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
 
   const getGlowClass = (type) => {

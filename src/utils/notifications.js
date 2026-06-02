@@ -2,6 +2,7 @@
  * Smart Notifications System
  * Handles browser notifications, streak reminders, and motivational alerts
  */
+import { getLocalDateStr } from './dateUtils';
 
 // Request notification permission
 export const requestNotificationPermission = async () => {
@@ -156,7 +157,7 @@ export const scheduleNotifications = (userData) => {
   // Evening reminder (8 PM) - only if tasks incomplete
   if (preferences.eveningReminder) {
     setTimeout(() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateStr();
       const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
       const todayTasks = completedTasks[today] || [];
       const selectedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
@@ -171,7 +172,7 @@ export const scheduleNotifications = (userData) => {
   // Streak risk reminder (11:45 PM) - only if tasks incomplete
   if (preferences.streakReminder) {
     setTimeout(() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateStr();
       const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '{}');
       const todayTasks = completedTasks[today] || [];
       const selectedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');

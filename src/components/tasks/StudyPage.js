@@ -6,6 +6,7 @@ import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function StudyPage() {
   const navigate = useNavigate();
@@ -158,7 +159,7 @@ export default function StudyPage() {
       return;
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "study";
 
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

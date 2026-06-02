@@ -242,6 +242,18 @@ export const checkAchievements = (stats, unlockedAchievements = []) => {
   return newlyUnlocked;
 };
 
+// Check achievements and persist any newly unlocked ones to Firestore
+export const checkAndPersistAchievements = async (db, userId, firestoreData) => {
+  const { doc, setDoc } = await import("firebase/firestore");
+  const stats = calculateUserStats(firestoreData);
+  const alreadyUnlocked = firestoreData.unlockedAchievements || [];
+  const newlyUnlocked = checkAchievements(stats, alreadyUnlocked);
+  if (newlyUnlocked.length === 0) return [];
+  const updatedList = [...alreadyUnlocked, ...newlyUnlocked.map(a => a.id)];
+  await setDoc(doc(db, "users", userId), { unlockedAchievements: updatedList }, { merge: true });
+  return newlyUnlocked;
+};
+
 // Get achievement by ID
 export const getAchievement = (id) => {
   return achievements.find(a => a.id === id);

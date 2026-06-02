@@ -5,11 +5,13 @@ import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "../../styles/WaterPage.css";
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
+import { checkAndPersistAchievements } from "../../utils/progressionSystem";
 
 export default function WaterPage() {
   const navigate = useNavigate();
   const language = localStorage.getItem("lang") || "en";
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateStr();
 
   const [waterIntake, setWaterIntake] = useState(0);
 
@@ -91,8 +93,13 @@ export default function WaterPage() {
       }, { merge: true });
   
       localStorage.setItem("availablePoints", (firestoreData.availablePoints || 0) + pointsToAdd);
+
+      const updatedSnap = await getDoc(userRef);
+      if (updatedSnap.exists()) {
+        await checkAndPersistAchievements(db, user.uid, updatedSnap.data());
+      }
     }
-  
+
     navigate("/home");
   };
   

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../NavBar";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { updatePoints } from "../../utils/updatePoints"; // ✅ new import
+import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function PhoneUsePage() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function PhoneUsePage() {
   const getRandomQuote = () => quotes[Math.floor(Math.random() * quotes.length)];
 
   const updateQuote = () => {
-    const today = new Date().toLocaleDateString();
+    const today = getLocalDateStr();
     const lastQuoteDate = localStorage.getItem("lastQuoteDate");
     if (lastQuoteDate !== today) {
       const q = getRandomQuote();
@@ -82,7 +83,7 @@ export default function PhoneUsePage() {
   };
 
   const handleSubmit = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "phone";
   
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

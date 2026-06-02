@@ -5,6 +5,7 @@ import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { taskPoints } from "../../utils/constants";
 import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function SleepPage() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function SleepPage() {
 
   const updateQuote = () => {
     const lastQuoteDate = localStorage.getItem("lastSleepQuoteDate");
-    const currentDate = new Date().toLocaleDateString();
+    const currentDate = getLocalDateStr();
 
     if (lastQuoteDate !== currentDate) {
       const randomQuote = getRandomQuote();
@@ -85,7 +86,7 @@ export default function SleepPage() {
   };
 
   const handleSubmit = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "sleep";
   
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");

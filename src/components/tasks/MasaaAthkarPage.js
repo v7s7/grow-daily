@@ -5,7 +5,8 @@ import { masaaAthkar } from "../../data/masaaAthkar";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { updatePoints } from "../../utils/updatePoints"; // ✅ new import
+import { updatePoints } from "../../utils/updatePoints";
+import { getLocalDateStr } from "../../utils/dateUtils";
 
 export default function MasaaAthkarPage() {
   const type = "masaa";
@@ -19,7 +20,7 @@ const completedTasks = JSON.parse(localStorage.getItem("completedTasks") || "{}"
 const now = new Date();
 const bahrainTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bahrain" }));
 const currentHour = bahrainTime.getHours();
-const currentDateStr = bahrainTime.toISOString().split("T")[0];
+const currentDateStr = getLocalDateStr(bahrainTime);
 
 // Get the last date this athkar was marked completed
 const lastCompletedDate = Object.keys(completedTasks).find(date =>
@@ -91,7 +92,7 @@ if (shouldReset) {
   };
 
   const handleSubmit = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     const taskName = "masaa_athkar";
   
     const completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
